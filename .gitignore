@@ -25,3 +25,5 @@ nbproject
 # Ignore build stuff
 /build/*
 /node_modules/
+# App specific files
+db*
