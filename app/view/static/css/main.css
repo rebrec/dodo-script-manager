@@ -1,0 +1,14 @@
+.highlightable:hover {
+    background-color: #e1e1e1;
+}
+
+.bottom-line:not(:last-child) {
+    border-bottom: 1px solid lightgrey;
+}
+
+#beta-mode {
+    text-align: center;
+    font-weight: 600;
+    color: white;
+    background-color: #00bd00;
+}
