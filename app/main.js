@@ -20,7 +20,7 @@ module.exports = function (db) {
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(bodyParser.json());
 
-    nunjucks.configure('view/templates', {
+    nunjucks.configure(config.projectRoot + '/app/view/templates', {
         autoescape: true,
         express: app
     });
