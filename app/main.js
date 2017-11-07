@@ -8,7 +8,7 @@ module.exports = function (db) {
 
     const ScriptEnumerator = require('./models/ScriptEnumerator')(db);
     const ScriptVersionEnumerator = require('./models/ScriptVersionEnumerator')(db);
-    const ScriptData = require('./models/scriptdata')(db);
+    const ScriptData = require('./models/ScriptData')(db);
     const ScriptSettings = require('./models/ScriptSettings')(db);
 
     const nunjucks = require('nunjucks');
