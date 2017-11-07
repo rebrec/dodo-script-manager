@@ -1,0 +1,44 @@
+process.env.NODE_ENV = 'test'; // set env before
+const Promise = require('bluebird');
+const fs = require('fs');
+
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const should = chai.should();
+
+const config = require('../../../config');
+
+
+Promise.promisifyAll(fs);
+
+chai.use(chaiHttp);
+
+
+describe('DB', function () {
+
+    beforeEach(function (done) {
+        // clear the DB
+        fs.statAsync(config.dbScriptDataFilename)
+            .then(_=> {
+                fs.unlinkAsync(config.dbScriptDataFilename).then(done)
+            })
+            .catch(err => {
+                done();
+            });
+    });
+
+    it("should create the database file if it doesn't exist", function (done) {
+        const dbLoader = require(config.projectRoot + '/app/models/db')(config);
+        dbLoader.loadAllDatabases(function(db){
+            const Scriptdata = require(config.projectRoot + '/app/models/scriptdata')(db);
+            let scriptdata = new Scriptdata('scriptname', 'scriptversion');
+            fs.statAsync(config.dbScriptDataFilename)
+                .then(_=> {
+                    done();
+                })
+                .catch(err => {
+                    done("File not created : " + err);
+                });
+        });
+    });
+});

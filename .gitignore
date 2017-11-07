@@ -26,4 +26,5 @@ nbproject
 /build/*
 /node_modules/
 # App specific files
-db*
+/test/db*
+/db*
