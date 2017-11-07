@@ -10,5 +10,11 @@
     text-align: center;
     font-weight: 600;
     color: white;
+}
+
+.beta-mode--beta{
+    background-color: #4390bd;
+}
+.beta-mode--production{
     background-color: #00bd00;
 }

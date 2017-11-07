@@ -31,7 +31,7 @@ module.exports = function (db) {
     router.route('/')
         .get(function (req, res) {
             res.render('index.html', {
-                title: 'Script Manager'
+                title: 'DODO (Script Manager)'
             });
         });
 
