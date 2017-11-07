@@ -1,5 +1,5 @@
 const config = require('../config');
-const dbLoader = require('./models/db')(config);
+const dbLoader = require(config.projectRoot + '/app/models/db')(config);
 let app;
 
 dbLoader.loadAllDatabases()
