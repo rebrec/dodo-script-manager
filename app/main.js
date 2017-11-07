@@ -13,9 +13,9 @@ module.exports = function (db) {
 
     const nunjucks = require('nunjucks');
 
-    app.use('/vendor/jquery', express.static(__dirname + '/../node_modules/jquery/dist/'));
-    app.use('/vendor/bootstrap', express.static(__dirname + '/../node_modules/bootstrap/dist/'));
-    app.use(express.static('view/static'));
+    app.use('/vendor/jquery', express.static(config.projectRoot + '/node_modules/jquery/dist/'));
+    app.use('/vendor/bootstrap', express.static(config.projectRoot + '/app/node_modules/bootstrap/dist/'));
+    app.use(express.static(config.projectRoot + '/app/view/static'));
 
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(bodyParser.json());
