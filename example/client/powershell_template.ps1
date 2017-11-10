@@ -1,5 +1,5 @@
 # Exemple of file
-$BASE_URL          = "http://localhost:8088/api/script"
+$BASE_URL          = "http://www.dodo.sdis72.fr:8088/api/script"
 $SCRIPT_NAME       = "MyFirstScript"
 $SCRIPT_VERSION    = "1.0"
 
