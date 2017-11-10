@@ -26,5 +26,6 @@ nbproject
 /build/*
 /node_modules/
 # App specific files
+/getProductionData.sh
 /test/db*
 /db*
