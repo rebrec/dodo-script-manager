@@ -61,9 +61,7 @@ describe('API Endpoint /api/script', function () {
                 expect(res.body.status).to.be.equal('success');
                 expect(res.body.data).to.be.an('array');
                 expect(res.body.data.length).to.be.equal(2);
-                expect(res.body.data).to.contains('host1');
-                expect(res.body.data).to.contains('host2');
-                expect(res.body.data).to.not.contains('host4');
+                expect(res.body.data[0].hostname).to.be.equal('host1');
                 done();
             });
     });

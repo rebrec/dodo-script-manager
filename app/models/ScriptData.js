@@ -17,6 +17,7 @@ module.exports = function (db) {
                     if (alreadyExecuted) {
                         return
                     } else {
+                        let recordTimestamp = (new Date()).toISOString().replace('T',' ').slice(0,-5)
                         return this.collection.updateAsync(
                             {
                                 scriptname: this.scriptname,
@@ -27,6 +28,7 @@ module.exports = function (db) {
                                 scriptname: this.scriptname,
                                 scriptversion: this.scriptversion,
                                 hostname: hostname,
+                                recordTimestamp: recordTimestamp,
                                 executed: executed
                             },
                             {   upsert : true    }
@@ -64,7 +66,13 @@ module.exports = function (db) {
                     let res = [];
                     for (let i = 0; i < docs.length; i++) {
                         let doc = docs[i];
-                        res.push(doc.hostname);
+                        // console.log(JSON.stringify(doc));
+                        delete doc._id;
+                        delete doc.scriptname;
+                        delete doc.scriptversion;
+                        // compatibility with previous version (fix missing fields)
+                        if (!doc.hasOwnProperty('recordTimestamp')) doc.recordTimestamp = 'not saved'
+                        res.push(doc);
                     }
                     return res;
                 });

@@ -32,10 +32,16 @@ class DataTable {
         let html = '';
 
         for (let i = 0; i < this._datasourceCache.length; i++) {
-            let name = this._datasourceCache[i];
-            html += '                <div class="highlightable bottom-line row">';
-            html += '                    <div class="col-xs-12"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
-            html += '                        ' + name
+            let hostObj = this._datasourceCache[i];
+            html += '                <div class="highlightable bottom-line row" data-hostname="' + hostObj.hostname + '">';
+            html += '                    <div class="col-xs-6 field-hostname">';
+            html += '                        ' + hostObj.hostname;
+            html += '                    </div>';
+            html += '                    <div class="col-xs-4">';
+            html += '                        ' + hostObj.recordTimestamp;
+            html += '                    </div>';
+            html += '                    <div class="col-xs-2"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
+            html += '                        ' + hostObj.executed;
             html += '                    </div>';
             html += '                </div>';
         }
@@ -47,7 +53,7 @@ class DataTable {
     }
 
     _onRemoveBtnClick(e) {
-        let selectedName = $(e.target).parent('div').text().trim();
+        let selectedName = $(e.target).parent('div').parent('div').data('hostname');
         this.onRemove(selectedName);
     }
 }
