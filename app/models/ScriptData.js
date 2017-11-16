@@ -31,17 +31,50 @@ module.exports = function (db) {
             );
         }
 
-        isAlreadyExecuted(hostname) {
-            return this.collection.findAsync({scriptname: this.scriptname, scriptversion: this.scriptversion, hostname: hostname})
+        updateLastCheckTimestamp(hostname) {
+            let timestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5);
+            return this.collection.findAsync({
+                scriptname: this.scriptname,
+                scriptversion: this.scriptversion,
+                hostname: hostname
+            })
                 .then(res=> {
-                    if (res.length === 0) return false;
-                    else {
-                        let h = res[0];
-                        if (!h.hasOwnProperty('executed')){
-                            throw new Error('Host do no have "executed" property !');
+                    let doc;
+                    if (res.length !== 0) {
+                        doc = res[0];
+                    } else {
+                        doc = {
+                            scriptname: this.scriptname,
+                            scriptversion: this.scriptversion,
+                            hostname: hostname
                         }
-                        return h.executed;
                     }
+                    doc.lastCheckTimestamp = timestamp;
+                    return doc;
+                })
+                .then(doc => {
+                return this.collection.updateAsync(
+                    {
+                        scriptname: this.scriptname,
+                        scriptversion: this.scriptversion,
+                        hostname: hostname
+                    },
+                    doc,
+                    {upsert: true}
+                );
+            });
+        }
+
+        isAlreadyExecuted(hostname) {
+            return this.updateLastCheckTimestamp(hostname)
+                .then(_ => {
+                    return this.collection.findOneAsync({scriptname: this.scriptname, scriptversion: this.scriptversion, hostname: hostname})
+                })
+                .then(doc => {
+                    if (!doc.hasOwnProperty('executed')){
+                        return false;
+                    }
+                    return doc.executed;
                 });
         }
 
