@@ -36,7 +36,7 @@ class DataTable {
         html += '    </h2>';
         html += '</div>';
         // Header
-        html += '                <div class="highlightable bottom-line row" data-hostname="' + hostObj.hostname + '">';
+        html += '                <div class="bottom-line row">';
         html += '                    <div class="col-xs-3 field-hostname">';
         html += '                        ' + 'Hostname';
         html += '                    </div>';
