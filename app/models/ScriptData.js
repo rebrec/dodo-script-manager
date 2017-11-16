@@ -11,30 +11,24 @@ module.exports = function (db) {
             // function promisification (only useful one, exposed publicly)
         }
 
-        recordExecution(hostname, executed=true) {
-            return this.isAlreadyExecuted(hostname)
-                .then(alreadyExecuted=> {
-                    if (alreadyExecuted) {
-                        return
-                    } else {
-                        let recordTimestamp = (new Date()).toISOString().replace('T',' ').slice(0,-5)
-                        return this.collection.updateAsync(
-                            {
-                                scriptname: this.scriptname,
-                                scriptversion: this.scriptversion,
-                                hostname: hostname
-                            },
-                            {
-                                scriptname: this.scriptname,
-                                scriptversion: this.scriptversion,
-                                hostname: hostname,
-                                recordTimestamp: recordTimestamp,
-                                executed: executed
-                            },
-                            {   upsert : true    }
-                        );
-                    }
-                });
+        recordExecution(hostname, additionnalData, executed = true) {
+            let recordTimestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5)
+            return this.collection.updateAsync(
+                {
+                    scriptname: this.scriptname,
+                    scriptversion: this.scriptversion,
+                    hostname: hostname
+                },
+                {
+                    scriptname: this.scriptname,
+                    scriptversion: this.scriptversion,
+                    hostname: hostname,
+                    recordTimestamp: recordTimestamp,
+                    additionnalData: additionnalData,
+                    executed: executed
+                },
+                {upsert: true}
+            );
         }
 
         isAlreadyExecuted(hostname) {
@@ -71,7 +65,8 @@ module.exports = function (db) {
                         delete doc.scriptname;
                         delete doc.scriptversion;
                         // compatibility with previous version (fix missing fields)
-                        if (!doc.hasOwnProperty('recordTimestamp')) doc.recordTimestamp = 'not saved'
+                        if (!doc.hasOwnProperty('recordTimestamp')) doc.recordTimestamp = 'not saved';
+                        if (!doc.hasOwnProperty('additionnalData')) doc.additionnalData = {};
                         res.push(doc);
                     }
                     return res;

@@ -34,6 +34,7 @@ class DropDownList {
     _build() {
         let c = this._DOMContainer;
         let html = '';
+
         html += '<div class="form-group row">';
         html += '    <select class="form-control col-12-sp">';
         // sort the array with eventual custom function

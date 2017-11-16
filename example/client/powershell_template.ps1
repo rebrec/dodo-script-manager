@@ -14,7 +14,7 @@ Function Main{
 }
 
 
-
+############################## DO NOT CHANGE BELOW ###########################
 
 
 Function isAlreadyExecuted {
@@ -32,10 +32,18 @@ Function isAlreadyExecuted {
     return $state.data
 }
 
+Function Get-AdditionnalData{
+    return @{
+            username          = $env:USERNAME
+    } | ConvertTo-Json
+}
 
 Function Save-ExecutionStatus {
     param()
-    $state = Invoke-RestMethod -Method Put -Uri "$BASE_URL/$SCRIPT_NAME/$SCRIPT_VERSION/$($env:COMPUTERNAME)" 
+    $additionnalJSONData = Get-AdditionnalData
+
+
+    $state = Invoke-RestMethod -Method Put -Uri "$BASE_URL/$SCRIPT_NAME/$SCRIPT_VERSION/$($env:COMPUTERNAME)" -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 
         Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
         # Check wether the Log function is defined :
@@ -50,6 +58,7 @@ Function Save-ExecutionStatus {
 
 
 $alreadyExecuted = isAlreadyExecuted
+
 if ($alreadyExecuted -eq $true){
     Write-Host "Script has already being executed"
 } else {

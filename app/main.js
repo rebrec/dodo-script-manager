@@ -206,6 +206,11 @@ module.exports = function (db) {
             let scriptName = req.params.script_name;
             let scriptVersion = req.params.script_version;
             let hostname = req.params.hostname;
+            let additionnalData = Object.assign({}, req.body);
+            // delete additionalParams.script_name;
+            // delete additionalParams.script_version;
+            // delete additionalParams.hostname;
+            
             if (!scriptName || !scriptVersion || !hostname) {
                 result.message = 'Invalid Parameter';
                 return res.json(result);
@@ -220,7 +225,7 @@ module.exports = function (db) {
                 })
                 .then(_=>{
                     let scriptData = new ScriptData(scriptName, scriptVersion);
-                    return scriptData.recordExecution(hostname, executed)
+                    return scriptData.recordExecution(hostname, additionnalData, executed)
                 })
                 .then(data => {
                     result.status = 'success';

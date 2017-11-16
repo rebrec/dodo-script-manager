@@ -30,6 +30,11 @@ class DataTable {
     _build() {
         let c = this._DOMContainer;
         let html = '';
+        html += '<div class="row">';
+        html += '    <h2 class="col-12-sp">';
+        html += '        Total Count : ' + this._datasourceCache.length;
+        html += '    </h2>';
+        html += '</div>';
 
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
@@ -44,6 +49,7 @@ class DataTable {
             html += '                        ' + hostObj.executed;
             html += '                    </div>';
             html += '                </div>';
+            console.log(hostObj.hostname, hostObj.additionnalData);
         }
 
         c.innerHTML = html;

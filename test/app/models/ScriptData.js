@@ -66,29 +66,6 @@ describe('ScriptData', function () {
     });
 
 
-    it('recordExecution() do not insert if already inserted', function (done) {
-        const ScriptData = ScriptDataFactory(helper.db);
-        const params = helper.generateRandomData();
-        let scriptdata = new ScriptData(params.scriptname, params.scriptversion);
-        params.executed = "test";
-        helper.db.scriptData.insertAsync(params)
-            .then(scriptdata.recordExecution.bind(scriptdata, params.hostname))
-            .then(_ => {
-                helper.db.scriptData.findOneAsync({scriptname: params.scriptname})
-                    .then((res) => {
-                        expect(res).to.have.property('scriptname');
-                        expect(res.scriptname).to.equal(params.scriptname);
-                        expect(res).to.have.property('scriptversion');
-                        expect(res.scriptversion).to.equal(params.scriptversion);
-                        expect(res).to.have.property('hostname');
-                        expect(res.hostname).to.equal(params.hostname);
-                        expect(res).to.have.property('executed');
-                        expect(res.executed).to.equal("test");
-                        done();
-                    });
-            });
-    });
-
     it('clearExecutionStatus() should remove a specific hostname', function (done) {
         const ScriptData = ScriptDataFactory(helper.db);
         const params1 = helper.generateRandomData();

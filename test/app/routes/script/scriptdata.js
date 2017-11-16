@@ -61,7 +61,16 @@ describe('API Endpoint /api/script', function () {
                 expect(res.body.status).to.be.equal('success');
                 expect(res.body.data).to.be.an('array');
                 expect(res.body.data.length).to.be.equal(2);
-                expect(res.body.data[0].hostname).to.be.equal('host1');
+                let host1Found = false;
+                let data = res.body.data;
+                for (let i=0;i<data.length;i++){
+                    let elt = data[i];
+                    if (elt.hostname.indexOf('host1')>-1){
+                        host1Found = true;
+                        break;
+                    }
+                }
+                expect(host1Found).to.be.equal(true);
                 done();
             });
     });
@@ -130,6 +139,7 @@ describe('API Endpoint /api/script', function () {
     it('PUT /script/script_name_1/0.2/new_host', function (done) {
         chai.request(helper.app)
             .put('/api/script/script_name_1/0.2/new_host')
+            .send({ prop1: 'val1', prop2: 'val2'})
             .end(function (err, res) {
                 expect(res).to.have.status(201);
                 expect(res).to.be.json;
@@ -142,6 +152,8 @@ describe('API Endpoint /api/script', function () {
                         expect(data.length).to.be.equal(1);
                         expect(data[0].hostname).to.be.equal('new_host');
                         expect(data[0].executed).to.be.equal(true);
+                        expect(data[0].additionnalData.prop1).to.be.equal("val1");
+                        expect(data[0].additionnalData.prop2).to.be.equal("val2");
                         done();
                     });
             });
