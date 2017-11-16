@@ -35,17 +35,35 @@ class DataTable {
         html += '        Total Count : ' + this._datasourceCache.length;
         html += '    </h2>';
         html += '</div>';
-
+        // Header
+        html += '                <div class="highlightable bottom-line row" data-hostname="' + hostObj.hostname + '">';
+        html += '                    <div class="col-xs-3 field-hostname">';
+        html += '                        ' + 'Hostname';
+        html += '                    </div>';
+        html += '                    <div class="col-xs-3">';
+        html += '                        ' + 'Last Check Time'
+        html += '                    </div>';
+        html += '                    <div class="col-xs-3">';
+        html += '                        ' + 'Execution Time'
+        html += '                    </div>';
+        html += '                    <div class="col-xs-3"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
+        html += '                        ' + 'Executed';
+        html += '                    </div>';
+        html += '                </div>';
+        // Rows
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
             html += '                <div class="highlightable bottom-line row" data-hostname="' + hostObj.hostname + '">';
-            html += '                    <div class="col-xs-6 field-hostname">';
+            html += '                    <div class="col-xs-3 field-hostname">';
             html += '                        ' + hostObj.hostname;
             html += '                    </div>';
-            html += '                    <div class="col-xs-4">';
+            html += '                    <div class="col-xs-3">';
             html += '                        ' + hostObj.recordTimestamp;
             html += '                    </div>';
-            html += '                    <div class="col-xs-2"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
+            html += '                    <div class="col-xs-3">';
+            html += '                        ' + hostObj.lastCheckTimestamp;
+            html += '                    </div>';
+            html += '                    <div class="col-xs-3"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
             html += '                        ' + hostObj.executed;
             html += '                    </div>';
             html += '                </div>';
