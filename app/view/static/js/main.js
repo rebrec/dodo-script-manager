@@ -15,6 +15,8 @@ let config = {
 
 
 function main() {
+    let savedSettings = localStorage.getItem('myApp') || myApp;
+
     settingStatus = new SettingStatus('#setting-status');
     dropdownScriptnames = new DropDownList('#dropdown-scriptname', {emptyArrayValue: 'No  Script Available'});
     dropdownScriptVersions = new DropDownList('#dropdown-scriptversion', {emptyArrayValue: 'No Version Available'});
@@ -26,6 +28,9 @@ function main() {
 
 
     dropdownScriptnames.setDataSourceURL(config.scriptnameListURL);
+
+    if (savedSettings.scriptname) onScriptnamesChange(myApp.scriptname);
+    if (savedSettings.scriptversion) onScriptVersionsChange(myApp.scriptversion);
 }
 
 

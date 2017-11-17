@@ -37,16 +37,16 @@ class DataTable {
         html += '</div>';
         // Header
         html += '                <div class="bottom-line row">';
-        html += '                    <div class="col-xs-3 field-hostname">';
+        html += '                    <div class="col-xs-3">';
         html += '                        ' + 'Hostname';
         html += '                    </div>';
         html += '                    <div class="col-xs-3">';
-        html += '                        ' + 'Last Check Time'
+        html += '                        ' + 'Last Check Time';
         html += '                    </div>';
         html += '                    <div class="col-xs-3">';
-        html += '                        ' + 'Execution Time'
+        html += '                        ' + 'Execution Time';
         html += '                    </div>';
-        html += '                    <div class="col-xs-3"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
+        html += '                    <div class="col-xs-3">';
         html += '                        ' + 'Executed';
         html += '                    </div>';
         html += '                </div>';
