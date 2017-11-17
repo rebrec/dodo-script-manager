@@ -58,10 +58,10 @@ class DataTable {
             html += '                        ' + hostObj.hostname;
             html += '                    </div>';
             html += '                    <div class="col-xs-3">';
-            html += '                        ' + hostObj.recordTimestamp;
+            html += '                        ' + hostObj.lastCheckTimestamp;
             html += '                    </div>';
             html += '                    <div class="col-xs-3">';
-            html += '                        ' + hostObj.lastCheckTimestamp;
+            html += '                        ' + hostObj.recordTimestamp;
             html += '                    </div>';
             html += '                    <div class="col-xs-3"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
             html += '                        ' + hostObj.executed;
