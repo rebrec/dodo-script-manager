@@ -15,7 +15,7 @@ let config = {
 
 
 function main() {
-    let savedSettings = localStorage.getItem('myApp') || myApp;
+    let savedSettings =   localStorage.getItem('myApp') ? JSON.parse(localStorage.getItem('myApp')) : myApp;
 
     settingStatus = new SettingStatus('#setting-status');
     dropdownScriptnames = new DropDownList('#dropdown-scriptname', {emptyArrayValue: 'No  Script Available'});
@@ -29,8 +29,8 @@ function main() {
 
     dropdownScriptnames.setDataSourceURL(config.scriptnameListURL);
 
-    if (savedSettings.scriptname) onScriptnamesChange(myApp.scriptname);
-    if (savedSettings.scriptversion) onScriptVersionsChange(myApp.scriptversion);
+    if (savedSettings.scriptname) onScriptnamesChange(savedSettings.scriptname);
+    if (savedSettings.scriptversion) onScriptVersionsChange(savedSettings.scriptversion);
 }
 
 
@@ -44,6 +44,7 @@ function onScriptVersionsChange(scriptversion) {
     myApp.scriptversion = scriptversion;
     let url = config.scriptnameListURL + '/' + myApp.scriptname + '/' + scriptversion;
     hostDataTable.setDataSourceURL(url);
+    localStorage.setItem('myApp', JSON.stringify(myApp));
     updateSettingStatus();
 }
 
