@@ -51,9 +51,10 @@ class DataTable {
         html += '                    </div>';
         html += '                </div>';
         // Rows
+        html += '                <div class="table-content">';
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
-            html += '                <div class="highlightable bottom-line row" data-hostname="' + hostObj.hostname + '">';
+            html += '                <div class="highlightable bottom-line row" data-hostobj="' + hostObj+ '">';
             html += '                    <div class="col-xs-3 field-hostname">';
             html += '                        ' + hostObj.hostname;
             html += '                    </div>';
@@ -69,6 +70,7 @@ class DataTable {
             html += '                </div>';
             console.log(hostObj.hostname, hostObj.additionnalData);
         }
+        html += '                </div>';
 
         c.innerHTML = html;
         let selectSelector = '.datatable-remove-btn';
@@ -77,7 +79,7 @@ class DataTable {
     }
 
     _onRemoveBtnClick(e) {
-        let selectedName = $(e.target).parent('div').parent('div').data('hostname');
+        let selectedName = $(e.target).parent('div').parent('div').data('hostname').hostname;
         this.onRemove(selectedName);
     }
 }
