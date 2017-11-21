@@ -13,20 +13,24 @@ Function global:Get-UniqueExecutionId {
     return "$env:COMPUTERNAME"
 }
 
-
 Function global:Get-AdditionnalData{
     return @{
             username           = $env:USERNAME
             computername       = $env:COMPUTERNAME
             os                 = $env:OS
             powershell_version = "$($host.version)"
-    } | ConvertTo-Json
+    }
 }
 
 
 Function isAlreadyExecuted {
     param()
-    $state = Invoke-RestMethod -Method Get -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
+    $url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
+    $request = [System.Net.HttpWebRequest]::Create($url)
+    $request.Method = "GET"
+    #$request.ContentType = "application/json"
+
+    $state = Invoke-RestMethod -Method Get -Uri $url
     if ($state.status -ne 'success'){ 
         Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
         # Check wether the Log function is defined :
@@ -41,10 +45,11 @@ Function isAlreadyExecuted {
     return $res
 }
 
+
 Function Save-ExecutionStatus {
     param()
-    $additionnalJSONData = Get-AdditionnalData
-
+    $additionnalJSONData = ConvertTo-Json $additionnalJSONData
+    
 
     $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 
@@ -58,4 +63,40 @@ Function Save-ExecutionStatus {
     Write-Host "Save-ExecutionStatus : done"
     return $state.data
 }
+
+# For compatibility with Powershell v2
+if ($PSVersionTable.PSVersion -eq "2.0") {
+	Function ConvertTo-JSON([object] $item){
+		add-type -assembly system.web.extensions
+		$ps_js=new-object system.web.script.serialization.javascriptSerializer
+		return $ps_js.Serialize($item)
+	}
+    function ConvertFrom-Json([object] $item){ 
+        add-type -assembly system.web.extensions
+        $ps_js=new-object system.web.script.serialization.javascriptSerializer
+    
+        #The comma operator is the array construction operator in PowerShell
+        return ,$ps_js.DeserializeObject($item)
+    }
+    function Invoke-RestMethod {
+        param($Method,$Uri, $Body, $ContentType)
+        $client = New-Object System.Net.WebClient
+        if ($Method -ieq "Get"){
+            $json = $client.DownloadString($Uri)
+            $res = ConvertFrom-Json $json
+            return $res
+        } elseif ($Method -ieq "Put"){
+            if ($PSBoundParameters.ContainsKey('ContentType')) {
+                $client.Headers["Content-Type"] = $ContentType
+            }
+            $json = $client.UploadString($Uri, $Method, $Body)
+            $res = ConvertFrom-Json $json
+            return $res
+        } else {
+            throw "Unknown Method : $Method (only GET and PUT are currently implemented)"
+        }
+       
+    }    
+}
+
 
