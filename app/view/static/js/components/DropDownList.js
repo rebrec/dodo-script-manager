@@ -10,7 +10,7 @@ class DropDownList {
         this._datasourceURL = null;
         this._datasourceCache = null;
         this.onChange = function(){};
-        this.sortFunction = null; // default to use basic sort function
+        this.sortFunction = null; // default to use basic _sort function
     }
 
     setDataSourceURL(url) {
@@ -37,10 +37,10 @@ class DropDownList {
 
         html += '<div class="form-group row">';
         html += '    <select class="form-control col-12-sp">';
-        // sort the array with eventual custom function
-        if (this.opt.sort) {
-            if (this.sortFunction) this._datasourceCache.sort(this.sortFunction);
-            else  this._datasourceCache.sort();
+        // _sort the array with eventual custom function
+        if (this.opt._sort) {
+            if (this.sortFunction) this._datasourceCache._sort(this.sortFunction);
+            else  this._datasourceCache._sort();
         }
 
         for (let i = 0; i < this._datasourceCache.length; i++) {

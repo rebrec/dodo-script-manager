@@ -34,14 +34,14 @@ function populateDB() {
 function _populateDBSettings() {
     let dataset = [
         {scriptname: 'script_name_custom_param', scriptversion: '0.1', someother: 'param'},
-        {scriptname: 'script_name_1', scriptversion: '0.2' },
+        {scriptname: 'script_name_1', scriptversion: '0.2', beta:true, testers:['host1'] },
         {scriptname: 'script_name_1', scriptversion: '0.3' },
         {scriptname: 'script_name_2', scriptversion: '0.1' },
         {scriptname: 'script_name_2', scriptversion: '0.2' },
         {scriptname: 'script_name_2', scriptversion: '0.3' },
         {scriptname: 'script_name_3', scriptversion: '0.1' },
         {scriptname: 'script_name_3', scriptversion: '0.4' },
-        {scriptname: 'script_name_beta', scriptversion: '0.1', beta: true}
+        {scriptname: 'script_name_beta', scriptversion: '0.1', beta: true, testers:['host-beta-executed', 'host-beta-not-executed', 'new_host1']}
     ];
     return db.settings.insertAsync(dataset)
 }

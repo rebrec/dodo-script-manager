@@ -8,29 +8,83 @@ module.exports = function (db) {
             this.scriptname = scriptname;
             this.scriptversion = scriptVersion;
             this.collection = db.settings;
+            this.filter = {scriptname: this.scriptname, scriptversion: this.scriptversion};
         }
 
 
         getScriptSettings() {
             return Promise.resolve()
                 .then(_ => {
-                    return this.collection.findOneAsync({scriptname: this.scriptname, scriptversion: this.scriptversion})
+                    return this.collection.findOneAsync(this.filter)
                 })
                 .then(res=> {
                     if (!res) return {};
                     // delete res.scriptname;
                     // delete res.scriptversion;
                     delete res._id;
-                    return res
+                    return this._setDefaultSettings(res)
                 });
 
         }
 
-        setScriptSettings(settings) {
-            let filter = {scriptname: this.scriptname, scriptversion: this.scriptversion}
-            let object;
-            object = Object.assign(filter, settings);
-            return this.collection.updateAsync(filter, object, {upsert: true});
+        _setDefaultSettings(settings){
+            if (!settings.hasOwnProperty('beta'))       settings.beta = true; // BETA MODE is On by default
+            if (!settings.hasOwnProperty('testers'))    settings.testers = []; // BETA MODE is On by default
+            return settings;
+        }
+
+        _setScriptSettings(settings) {
+            return this.collection.findAsync(this.filter)
+                .then(res=> {
+                    let doc;
+                    if (res.length !== 0) {
+                        doc = res[0];
+                    } else {
+                        doc = this._setDefaultSettings(this.filter);
+                    }
+                    return doc;
+                })
+                .then(doc => {
+                    let object;
+                    object = Object.assign(doc, settings);
+                    return this.collection.updateAsync(this.filter, doc, {upsert: true});
+                });
+        }
+
+        _setBetaMode(mode) {
+            return this.getScriptSettings()
+                .then(settings=> {
+                    settings.beta = mode;
+                    return this._setScriptSettings(settings);
+                })
+        }
+
+        enableBeta(){
+            return this._setBetaMode(true);
+        }
+
+        disableBeta(){
+            return this._setBetaMode(false);
+        }
+
+        addTester(uid){
+            return this.getScriptSettings()
+                .then(settings=>{
+                    let index = settings.testers.indexOf(uid);
+                    if (index === -1) settings.testers.push(uid);
+                    return this._setScriptSettings(settings);
+                })
+
+        }
+
+        delTester(uid){
+            return this.getScriptSettings()
+                .then(settings=>{
+                    let index = settings.testers.indexOf(uid);
+                    if (index !== -1) settings.testers.splice(index, 1);
+                    return this._setScriptSettings(settings);
+                })
+
         }
     }
 

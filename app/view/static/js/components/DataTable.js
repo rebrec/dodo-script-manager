@@ -7,7 +7,10 @@ class DataTable {
         this._datasourceURL = null;
         this._datasourceCache = null;
         this.onRemove = function(){};
+        this._sortedKey = 'hostname'
+        this._sortAscending = true;
     }
+
 
     setDataSourceURL(url) {
         this._datasourceURL = url;
@@ -15,6 +18,7 @@ class DataTable {
             .then(this._build.bind(this));
     }
 
+   
     _updateDataSource() {
         return new Promise((resolve, reject) => {
             $.getJSON(this._datasourceURL, data => {
@@ -26,8 +30,31 @@ class DataTable {
             });
         });
     }
+    _sortDatasourceCache() {
+        this._datasourceCache.sort((a, b)=> {
+            let res;
+            if (this._sortAscending) {
+                res = (a[this._sortedKey] < b[this._sortedKey]) ? 1 : -1;
+            } else {
+                res = (a[this._sortedKey] < b[this._sortedKey]) ? -1 : 1;
+            }
+            return res;
+        })
+    }
+
+    _sort(sortedKey) {
+        if (!sortedKey || sortedKey === this._sortedKey) {
+            this._sortAscending = !this._sortAscending;
+        } else {
+            this._sortedKey = sortedKey;
+            this._sortAscending = true;
+        }
+        this._build();
+    }
 
     _build() {
+        this._sortDatasourceCache();
+
         let c = this._DOMContainer;
         let html = '';
         html += '<div class="row">';
@@ -37,16 +64,16 @@ class DataTable {
         html += '</div>';
         // Header
         html += '                <div class="bottom-line row">';
-        html += '                    <div class="col-xs-3">';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="hostname">';
         html += '                        ' + 'Hostname';
         html += '                    </div>';
-        html += '                    <div class="col-xs-3">';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="lastCheckTimestamp">';
         html += '                        ' + 'Last Check Time';
         html += '                    </div>';
-        html += '                    <div class="col-xs-3">';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="recordTimestamp">';
         html += '                        ' + 'Execution Time';
         html += '                    </div>';
-        html += '                    <div class="col-xs-3">';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="executed">';
         html += '                        ' + 'Executed';
         html += '                    </div>';
         html += '                </div>';
@@ -54,7 +81,7 @@ class DataTable {
         html += '                <div class="table-content">';
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
-            html += '                <div class="highlightable bottom-line row" data-hostobj="' + hostObj+ '">';
+            html += '                <div class="highlightable bottom-line row" data-hostobj=\'' + JSON.stringify(hostObj) + '\'>';
             html += '                    <div class="col-xs-3 field-hostname">';
             html += '                        ' + hostObj.hostname;
             html += '                    </div>';
@@ -68,18 +95,25 @@ class DataTable {
             html += '                        ' + hostObj.executed;
             html += '                    </div>';
             html += '                </div>';
-            console.log(hostObj.hostname, hostObj.additionnalData);
         }
         html += '                </div>';
 
         c.innerHTML = html;
         let selectSelector = '.datatable-remove-btn';
         let selectNode = $(selectSelector);
+
         selectNode.on('click', this._onRemoveBtnClick.bind(this));
+        $('.datatable-_sort-btn').on('click', this._sortBtnClick.bind(this));
+
     }
 
     _onRemoveBtnClick(e) {
-        let selectedName = $(e.target).parent('div').parent('div').data('hostname').hostname;
+        let selectedName = $(e.target).parent('div').parent('div').data('hostobj').hostname;
         this.onRemove(selectedName);
+    }
+
+    _sortBtnClick(e){
+        let selectedCol = $(e.target).data('columnname');
+        this._sort(selectedCol);
     }
 }

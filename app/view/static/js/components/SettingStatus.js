@@ -8,7 +8,7 @@ class SettingStatus {
         this._datasourceURL = null;
         this._datasourceCache = null;
         this.onChange = function(){};
-        this.sortFunction = null; // default to use basic sort function
+        this.sortFunction = null; // default to use basic _sort function
         this.beta = false;
     }
 

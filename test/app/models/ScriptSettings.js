@@ -47,12 +47,12 @@ describe('ScriptSettings', function () {
             });
     });
 
-    it('setScriptSettings() store all settings for the specific script', function (done) {
+    it('_setScriptSettings() store all settings for the specific script', function (done) {
         const ScriptSettings = ScriptSettingFactory(helper.db);
         const params = generateRandomData();
         let scriptSettings = new ScriptSettings(params.scriptname, params.scriptversion);
         let settings = {beta: true};
-        scriptSettings.setScriptSettings(settings)
+        scriptSettings._setScriptSettings(settings)
             .then(_=>{
                 return helper.db.settings.findAsync({scriptname: params.scriptname, scriptversion: params.scriptversion});
             })

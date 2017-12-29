@@ -74,7 +74,6 @@ module.exports = function (db) {
                 });
         });
 
-
     routerApi.route('/script/settings/:script_name/:script_version')
         .get(function (req, res) {
             let result = {status: 'fail'};
@@ -108,14 +107,14 @@ module.exports = function (db) {
 
             let settings = Object.assign({}, req.body);
             let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
-            scriptSettings.setScriptSettings(settings)
+            scriptSettings._setScriptSettings(settings)
                 .then(data => {
                     result.status = 'success';
                     result.data = data;
                     return res.json(result);
                 })
                 .catch(err => {
-                    result.message = 'An error occured';
+                    result.message = 'An error occured' + err;
                     return res.json(result);
                 });
         });
@@ -156,21 +155,24 @@ module.exports = function (db) {
             }
 
             let scriptData = new ScriptData(scriptName, scriptVersion);
-            scriptData.isAlreadyExecuted(hostname)
-                .then(data =>{
-                    let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
-                    return scriptSettings.getScriptSettings()
-                        .then(setting =>{
-                            if (setting.beta){
-                                data = (setting.beta === true) ? !data : data
-                            }
-                            return data
-                        })
+            let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
+            return scriptSettings.getScriptSettings()
+                .then(settings=> {
+                    if (settings.beta) {
+                        if (settings.testers.indexOf(hostname) > -1) {
+                            return scriptData.isAlreadyExecuted(hostname)
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return scriptData.isAlreadyExecuted(hostname)
+                    }
                 })
-                .then(data => {
+                .then(data=>{
                     result.status = 'success';
                     result.data = data;
                     return res.json(result);
+
                 })
                 .catch(err => {
                     result.message = 'An error occured';
@@ -216,17 +218,9 @@ module.exports = function (db) {
                 return res.json(result);
             }
             let executed = true;
-            let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
-            scriptSettings.getScriptSettings()
-                .then(data=>{
-                    if (data.hasOwnProperty('beta') && data.beta === true){
-                        executed = false;
-                    }
-                })
-                .then(_=>{
-                    let scriptData = new ScriptData(scriptName, scriptVersion);
-                    return scriptData.recordExecution(hostname, additionnalData, executed)
-                })
+            let scriptData = new ScriptData(scriptName, scriptVersion);
+            return scriptData.recordExecution(hostname, additionnalData, executed)
+
                 .then(data => {
                     result.status = 'success';
                     result.data = '';
