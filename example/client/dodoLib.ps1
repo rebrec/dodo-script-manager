@@ -48,7 +48,8 @@ Function isAlreadyExecuted {
 
 Function Save-ExecutionStatus {
     param()
-    $additionnalJSONData = ConvertTo-Json $additionnalJSONData
+	$additionnalData = Get-AdditionnalData
+    $additionnalJSONData = ConvertTo-Json $additionnalData
     
 
     $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData

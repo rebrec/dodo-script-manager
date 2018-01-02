@@ -34,7 +34,7 @@ Function isAlreadyExecuted {
     if ($state.status -ne 'success'){ 
         Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
         # Check wether the Log function is defined :
-        if ($(Get-ChildItem function: | where {$_.name -eq 'isAlreadyExecuted' }) -ne $null) {
+        if ($(Get-ChildItem function: | where {$_.name -eq 'Log' }) -ne $null) {
             Log "Something went wrong while running isAlreadyExecuted function. Result is $(ConvertTo-JSON $state)"
         }
         return $false # default is to run if no answer from the server
@@ -48,9 +48,9 @@ Function Save-ExecutionStatus {
     param()
     $state = Invoke-RestMethod -Method Put -Uri "$BASE_URL/$SCRIPT_NAME/$SCRIPT_VERSION/$($env:COMPUTERNAME)" 
     if ($state.status -ne 'success'){ 
-        Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
+        Write-Host "Error calling Save-ExecutionStatus, returned non successfull value"
         # Check wether the Log function is defined :
-        if ($(Get-ChildItem function: | where {$_.name -eq 'isAlreadyExecuted' }) -ne $null) {
+        if ($(Get-ChildItem function: | where {$_.name -eq 'Log' }) -ne $null) {
             Log "Something went wrong while running Save-ExecutionStatus function. Result is $(ConvertTo-JSON $state)"
         }
         return $false # default is to run if no answer from the server
