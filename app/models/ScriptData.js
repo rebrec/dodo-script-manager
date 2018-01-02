@@ -12,23 +12,26 @@ module.exports = function (db) {
         }
 
         recordExecution(hostname, additionnalData, executed = true) {
-            let recordTimestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5)
-            return this.collection.updateAsync(
-                {
-                    scriptname: this.scriptname,
-                    scriptversion: this.scriptversion,
-                    hostname: hostname
-                },
-                {
-                    scriptname: this.scriptname,
-                    scriptversion: this.scriptversion,
-                    hostname: hostname,
-                    recordTimestamp: recordTimestamp,
-                    additionnalData: additionnalData,
-                    executed: executed
-                },
-                {upsert: true}
-            );
+            let recordTimestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5);
+            return this.updateLastCheckTimestamp(hostname)
+                .then(_ => {
+                    return this.collection.findOneAsync({scriptname: this.scriptname, scriptversion: this.scriptversion, hostname: hostname})
+                })
+                .then(doc => {
+                    doc.recordTimestamp = recordTimestamp;
+                    doc.additionnalData = additionnalData;
+                    doc.executed        = executed;
+
+                    return this.collection.updateAsync(
+                        {
+                            scriptname: this.scriptname,
+                            scriptversion: this.scriptversion,
+                            hostname: hostname
+                        },
+                        doc,
+                        {upsert: true}
+                    );
+                })
         }
 
         updateLastCheckTimestamp(hostname) {
@@ -53,16 +56,16 @@ module.exports = function (db) {
                     return doc;
                 })
                 .then(doc => {
-                return this.collection.updateAsync(
-                    {
-                        scriptname: this.scriptname,
-                        scriptversion: this.scriptversion,
-                        hostname: hostname
-                    },
-                    doc,
-                    {upsert: true}
-                );
-            });
+                    return this.collection.updateAsync(
+                        {
+                            scriptname: this.scriptname,
+                            scriptversion: this.scriptversion,
+                            hostname: hostname
+                        },
+                        doc,
+                        {upsert: true}
+                    );
+                });
         }
 
         isAlreadyExecuted(hostname) {
