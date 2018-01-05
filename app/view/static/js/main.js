@@ -5,8 +5,8 @@ let myApp = {
     scriptname: null,
     scriptversion: null
 };
-
-
+let settingsLoaded;
+let savedSettings;
 let config = {
     scriptnameListURL:  '/api/script',
     scriptSettingURL:   '/api/script/settings'
@@ -14,8 +14,16 @@ let config = {
 
 
 
+
 function main() {
-    let savedSettings =   localStorage.getItem('myApp') ? JSON.parse(localStorage.getItem('myApp')) : myApp;
+    if (localStorage.getItem('myApp')) {
+        savedSettings = JSON.parse(localStorage.getItem('myApp'));
+        settingsLoaded = false;
+    } else {
+        savedSettings = myApp;
+        settingsLoaded = true;
+    }
+
 
     settingStatus = new SettingStatus('#setting-status');
     dropdownScriptnames = new DropDownList('#dropdown-scriptname', {emptyArrayValue: 'No  Script Available'});
@@ -29,18 +37,26 @@ function main() {
 
     dropdownScriptnames.setDataSourceURL(config.scriptnameListURL);
 
-    if (savedSettings.scriptname) onScriptnamesChange(savedSettings.scriptname);
-    if (savedSettings.scriptversion) onScriptVersionsChange(savedSettings.scriptversion);
 }
 
 
 function onScriptnamesChange(scriptname) {
+    if (  !settingsLoaded
+        && savedSettings.scriptname
+        && savedSettings.scriptname !== scriptname ) return onScriptnamesChange(savedSettings.scriptname);
+
     myApp.scriptname = scriptname;
     let url = config.scriptnameListURL + '/' + scriptname;
     dropdownScriptVersions.setDataSourceURL(url)
 }
 
 function onScriptVersionsChange(scriptversion) {
+    if (  !settingsLoaded
+        && savedSettings.scriptversion
+        && savedSettings.scriptversion !== scriptversion ) return onScriptVersionsChange(savedSettings.scriptversion);
+
+    if (!settingsLoaded && scriptversion === savedSettings.scriptversion) settingsLoaded = true;
+
     myApp.scriptversion = scriptversion;
     let url = config.scriptnameListURL + '/' + myApp.scriptname + '/' + scriptversion;
     hostDataTable.setDataSourceURL(url);
