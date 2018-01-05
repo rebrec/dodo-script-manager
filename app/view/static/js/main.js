@@ -9,7 +9,8 @@ let settingsLoaded;
 let savedSettings;
 let config = {
     scriptnameListURL:  '/api/script',
-    scriptSettingURL:   '/api/script/settings'
+    scriptApiSettingURL :   '/api/script/settings',
+    scriptSettingsURL:   '/settings/script'
 };
 
 
@@ -25,7 +26,7 @@ function main() {
     }
 
 
-    settingStatus = new SettingStatus('#setting-status');
+    settingStatus = new SettingStatus('#setting-status', config);
     dropdownScriptnames = new DropDownList('#dropdown-scriptname', {emptyArrayValue: 'No  Script Available'});
     dropdownScriptVersions = new DropDownList('#dropdown-scriptversion', {emptyArrayValue: 'No Version Available'});
     hostDataTable = new DataTable('#host-datatable');
@@ -80,6 +81,5 @@ function onRemoveHost(hostname) {
 }
 
 function updateSettingStatus() {
-    let url = config.scriptSettingURL + '/' + myApp.scriptname + '/' + myApp.scriptversion;
-    settingStatus.setDataSourceURL(url);
+    settingStatus.setScript(myApp.scriptname, myApp.scriptversion);
 }

@@ -1,8 +1,9 @@
 class SettingStatus {
-    constructor(container, opt) {
+    constructor(container, config, opt) {
         this._containerSelector = container;
         this.opt = Object.assign({
             }, opt);
+
         this._DOMContainer = document.querySelector(this._containerSelector);
         if (!this._DOMContainer) throw ('Fail to retrieve container with selector : "' + this._containerSelector + '".');
         this._datasourceURL = null;
@@ -10,9 +11,18 @@ class SettingStatus {
         this.onChange = function(){};
         this.sortFunction = null; // default to use basic _sort function
         this.beta = false;
+        this._config = config;
+        this._scriptname = '';
+        this._scriptversion = '';
     }
 
-    setDataSourceURL(url) {
+    setScript(scriptname, scriptversion){
+        this._scriptname = scriptname;
+        this._scriptversion = scriptversion;
+        this._setDataSourceURL(this._config.scriptApiSettingURL + '/' + this._scriptname + '/' + this._scriptversion);
+    }
+    
+    _setDataSourceURL(url) {
         this._datasourceURL = url;
         return this._updateDataSource()
             .then(this._build.bind(this));
@@ -45,8 +55,11 @@ class SettingStatus {
 
         let html = '';
         html += '<div class="row" id="beta-mode">';
-        html += '  <div class="col-lg-12 ' + cssClass + '" id="beta-mode">';
+        html += '  <div class="col-lg-11 ' + cssClass + '" id="beta-mode">';
         html += '    ' + textContent;
+        html += '  </div>';
+        html += '  <div class="col-lg-1 right ' + cssClass + '">';
+        html += '    <a href="' + this._config.scriptSettingsURL + '/' + this._scriptname + '/' + this._scriptversion +'" class="glyphicon glyphicon-cog"></a>';
         html += '  </div>';
         html += '</div>';
         c.innerHTML = html;
