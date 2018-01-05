@@ -64,18 +64,18 @@ class DataTable {
         html += '</div>';
         // Header
         html += '                <div class="bottom-line row">';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="hostname">';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="hostname"><b>';
         html += '                        ' + 'Hostname';
-        html += '                    </div>';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="lastCheckTimestamp">';
+        html += '                    </b></div>';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="lastCheckTimestamp"><b>';
         html += '                        ' + 'Last Check Time';
-        html += '                    </div>';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="recordTimestamp">';
+        html += '                    </b></div>';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="recordTimestamp"><b>';
         html += '                        ' + 'Execution Time';
-        html += '                    </div>';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="executed">';
+        html += '                    </b></div>';
+        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="executed"><b>';
         html += '                        ' + 'Executed';
-        html += '                    </div>';
+        html += '                    </b></div>';
         html += '                </div>';
         // Rows
         html += '                <div class="table-content">';
