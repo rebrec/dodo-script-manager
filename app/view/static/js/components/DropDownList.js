@@ -45,9 +45,7 @@ class DropDownList {
 
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let name = this._datasourceCache[i];
-            html += '                <option>';
-            html += '            ' + name
-            html += '                </option>';
+            html += '                <option>' + name + '</option>';
         }
 
         html += '    </select>';
@@ -56,6 +54,15 @@ class DropDownList {
         let selectSelector = this._containerSelector + ' select';
         let selectNode = $(selectSelector);
         selectNode.on('change', this._onSelectChange.bind(this));
+        let fakeEvent = { target: selectNode };
+        this._onSelectChange(fakeEvent);
+    }
+
+    select(field){
+        $(this._containerSelector + " option").removeAttr('selected', 'selected');
+        $(this._containerSelector + " option:contains(" + field + ")").attr('selected', 'selected');
+        let selectSelector = this._containerSelector + ' select';
+        let selectNode = $(selectSelector);
         let fakeEvent = { target: selectNode };
         this._onSelectChange(fakeEvent);
     }

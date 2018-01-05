@@ -30,8 +30,8 @@ function main() {
     dropdownScriptVersions = new DropDownList('#dropdown-scriptversion', {emptyArrayValue: 'No Version Available'});
     hostDataTable = new DataTable('#host-datatable');
 
-    dropdownScriptnames.onChange = onScriptnamesChange;
-    dropdownScriptVersions.onChange = onScriptVersionsChange;
+    dropdownScriptnames.onChange = onDropDownScriptnamesChange;
+    dropdownScriptVersions.onChange = onDropDownScriptVersionsChange;
     hostDataTable.onRemove = onRemoveHost;
 
 
@@ -40,23 +40,23 @@ function main() {
 }
 
 
-function onScriptnamesChange(scriptname) {
+function onDropDownScriptnamesChange(scriptname) {
     if (  !settingsLoaded
         && savedSettings.scriptname
-        && savedSettings.scriptname !== scriptname ) return onScriptnamesChange(savedSettings.scriptname);
+        && savedSettings.scriptname !== scriptname ) return dropdownScriptnames.select(savedSettings.scriptname);
 
     myApp.scriptname = scriptname;
     let url = config.scriptnameListURL + '/' + scriptname;
     dropdownScriptVersions.setDataSourceURL(url)
 }
 
-function onScriptVersionsChange(scriptversion) {
+function onDropDownScriptVersionsChange(scriptversion) {
     if (  !settingsLoaded
         && savedSettings.scriptversion
         && savedSettings.scriptversion !== scriptversion ) {
-        settingsLoaded = true;
-        return onScriptVersionsChange(savedSettings.scriptversion);
+        return dropdownScriptVersions.select(savedSettings.scriptversion);
     }
+    if (!settingsLoaded && savedSettings.scriptversion === scriptversion) settingsLoaded = true;
 
     myApp.scriptversion = scriptversion;
     let url = config.scriptnameListURL + '/' + myApp.scriptname + '/' + scriptversion;
@@ -72,7 +72,7 @@ function onRemoveHost(hostname) {
         type: 'DELETE',
         success: function (result) {
             console.log(result);
-            onScriptVersionsChange(myApp.scriptversion);
+            onDropDownScriptVersionsChange(myApp.scriptversion);
             // Do something with the result
         }
     });
