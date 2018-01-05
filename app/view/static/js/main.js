@@ -53,9 +53,10 @@ function onScriptnamesChange(scriptname) {
 function onScriptVersionsChange(scriptversion) {
     if (  !settingsLoaded
         && savedSettings.scriptversion
-        && savedSettings.scriptversion !== scriptversion ) return onScriptVersionsChange(savedSettings.scriptversion);
-
-    if (!settingsLoaded && scriptversion === savedSettings.scriptversion) settingsLoaded = true;
+        && savedSettings.scriptversion !== scriptversion ) {
+        settingsLoaded = true;
+        return onScriptVersionsChange(savedSettings.scriptversion);
+    }
 
     myApp.scriptversion = scriptversion;
     let url = config.scriptnameListURL + '/' + myApp.scriptname + '/' + scriptversion;
