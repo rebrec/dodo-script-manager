@@ -1,4 +1,3 @@
-
 module.exports = function (db) {
 
     const express = require('express');
@@ -141,6 +140,62 @@ module.exports = function (db) {
                 });
         });
 
+    routerApi.route('/script/settings/:script_name/:script_version/:uid')   // SETTINGS Testers
+        .put(function (req, res) {
+            let result = {status: 'fail'};
+            let scriptName = req.params.script_name;
+            let scriptVersion = req.params.script_version;
+            let uid = req.params.uid;
+            let additionnalData = Object.assign({}, req.body);
+            // delete additionalParams.script_name;
+            // delete additionalParams.script_version;
+            // delete additionalParams.hostname;
+
+            if (!scriptName || !scriptVersion || !uid) {
+                result.message = 'Invalid Parameter';
+                return res.json(result);
+            }
+
+            let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
+            return scriptSettings.addTester(uid)
+                .then(data => {
+                    result.status = 'success';
+                    result.data = data || '';
+                    return res.status(201).json(result);
+                })
+                .catch(err => {
+                    result.message = 'An error occured';
+                    return res.status(501).json(result);
+                });
+        })
+        .delete(function (req, res) {
+            let result = {status: 'fail'};
+            let scriptName = req.params.script_name;
+            let scriptVersion = req.params.script_version;
+            let uid = req.params.uid;
+            let additionnalData = Object.assign({}, req.body);
+            // delete additionalParams.script_name;
+            // delete additionalParams.script_version;
+            // delete additionalParams.hostname;
+
+            if (!scriptName || !scriptVersion || !uid) {
+                result.message = 'Invalid Parameter';
+                return res.json(result);
+            }
+
+            let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
+            return scriptSettings.delTester(uid)
+                .then(data => {
+                    result.status = 'success';
+                    result.data = data || '';
+                    return res.status(201).json(result);
+                })
+                .catch(err => {
+                    result.message = 'An error occured';
+                    return res.status(501).json(result);
+                });
+        });
+
 
     routerApi.route('/script/:script_name/:script_version')
         .get(function (req, res) {
@@ -193,7 +248,7 @@ module.exports = function (db) {
                         return scriptData.isAlreadyExecuted(hostname)
                     }
                 })
-                .then(data=>{
+                .then(data=> {
                     result.status = 'success';
                     result.data = data;
                     return res.json(result);
@@ -237,7 +292,7 @@ module.exports = function (db) {
             // delete additionalParams.script_name;
             // delete additionalParams.script_version;
             // delete additionalParams.hostname;
-            
+
             if (!scriptName || !scriptVersion || !hostname) {
                 result.message = 'Invalid Parameter';
                 return res.json(result);

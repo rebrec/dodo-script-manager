@@ -1,5 +1,5 @@
 let config = {
-    scriptnameListURL:  '/api/script',
-    scriptApiSettingURL :   '/api/script/settings',
-    scriptSettingsURL:   '/settings/script'
+    scriptnameListURL:              '/api/script',
+    scriptApiSettingURL :           '/api/script/settings',
+    scriptSettingsURL:              '/settings/script'
 };

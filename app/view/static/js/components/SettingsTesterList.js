@@ -2,7 +2,6 @@ class SettingsTesterList{
     constructor(container, config, opt) {
         this._containerSelector = container;
         this.opt = Object.assign({}, opt);
-        this._clickSelector = 'settings-tester-list';
 
         this._DOMContainer = document.querySelector(this._containerSelector);
         if (!this._DOMContainer) throw ('Fail to retrieve container with selector : "' + this._containerSelector + '".');
@@ -21,7 +20,11 @@ class SettingsTesterList{
         this._scriptversion = scriptversion;
         this._setDataSourceURL(this._config.scriptApiSettingURL + '/' + this._scriptname + '/' + this._scriptversion);
     }
-    
+
+    _getAddTesterURL(uid){
+        return this._datasourceURL + '/' + uid;
+    }
+
     _setDataSourceURL(url) {
         this._datasourceURL = url;
         return this._updateDataSource()
@@ -54,6 +57,17 @@ class SettingsTesterList{
         let cssClass = this.beta ? 'beta-mode--beta' : 'beta-mode--production';
 
         let html = '<div class="col-md-12">';
+        html += this._buildTesterList();
+        html += '</div>';
+        html += '<div class="col-md-12">';
+        html += this._buildAddTester();
+        html += '</div>';
+        c.innerHTML = html;
+        this._registerEvents();
+    }
+
+    _buildTesterList() {
+        let html = '';
         let testers = this._datasourceCache.testers;
         if (testers.length > 0) {
             for (let i = 0; i < testers.length; i++) {
@@ -67,28 +81,38 @@ class SettingsTesterList{
         } else {
             html += 'No Testers yet !';
         }
-        html += '</div>';
-        c.innerHTML = html;
-        let selectSelector = '#' + this._clickSelector;
-        let selectNode = $(selectSelector);
-        selectNode.on('click', this._onClick.bind(this));
+        return html;
     }
 
-    _toggle(){
-        this.beta = !this.beta
-        let data = {beta: this.beta};
+    _buildAddTester(){
+        let html = '';
+        html +=  '<div class="row">';
+        html +=  '    <input type="text" width="35" class="col-md-5" placeholder="Hostname ID to add to Beta"></input>';
+        html +=  '    <button id="settings-btn-add-host-to-beta" class="col-md-2">Add</button>';
+        html +=  '</div>';
+        return html;
+    }
+
+    _registerEvents(){
+        $('#settings-btn-add-host-to-beta').on('click', this._onClickAddTester.bind(this));
+    }
+
+    _onClickAddTester(e){
+        let uid = $($(e.target).siblings()[0]).val();
+        if (uid !== ''){
+            this._addTester(uid);
+        }
+    }
+
+    _addTester(uid){
+        let url = this._getAddTesterURL(uid);
+        let data = {};
         $.ajax({
-            url: this._datasourceURL,
-            type: 'POST',
+            url: url,
+            type: 'PUT',
             data: data
         })
-            .then(res=> {
-                this._updateDataSource();
-            });
-    }
-
-    _onClick(e) {
-        this._toggle();
-        this._build(); // for fast rendering
+        .then(this._updateDataSource.bind(this))
+        .then(this._build.bind(this));
     }
 }
