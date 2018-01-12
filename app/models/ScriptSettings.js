@@ -21,7 +21,7 @@ module.exports = function (db) {
                     // delete res.scriptname;
                     // delete res.scriptversion;
                     delete res._id;
-                    if (!res.beta) { res.beta = false;}
+                    if (!res.beta) { res.beta = true;} // default state for scripts is beta=true
                     return this._setDefaultSettings(res)
                 });
 
@@ -58,7 +58,18 @@ module.exports = function (db) {
                     return this._setScriptSettings(settings);
                 })
         }
-
+        
+        isAllowedToRun(hostname){
+            return this.getScriptSettings()
+                .then(settings=> {
+                    if (settings.beta) {
+                        return (settings.testers.indexOf(hostname) > -1)
+                    } else {
+                        return true;
+                    }
+                });
+        }
+        
         enableBeta(){
             return this._setBetaMode(true);
         }

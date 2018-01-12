@@ -180,11 +180,14 @@ module.exports = function (db) {
             let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
             return scriptSettings.getScriptSettings()
                 .then(settings=> {
-                    if (settings.beta) {
-                        if (settings.testers.indexOf(hostname) > -1) {
+                    if (settings.beta == 'true') {
+                        if (settings.testers.indexOf(hostname) > -1) { // if beta and tester
                             return scriptData.isAlreadyExecuted(hostname)
-                        } else {
-                            return false;
+                        } else { // if beta and not tester
+                            return scriptData.updateLastCheckTimestamp(hostname)
+                                .then(_ => {
+                                    return true;  // true = already Executed which mean that it won't execute
+                                });
                         }
                     } else {
                         return scriptData.isAlreadyExecuted(hostname)

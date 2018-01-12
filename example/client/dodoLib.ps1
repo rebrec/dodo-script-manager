@@ -22,7 +22,6 @@ Function global:Get-AdditionnalData{
     }
 }
 
-
 Function isAlreadyExecuted {
     param()
     $url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
@@ -99,5 +98,4 @@ if ($PSVersionTable.PSVersion -eq "2.0") {
        
     }    
 }
-
 
