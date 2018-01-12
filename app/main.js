@@ -34,6 +34,26 @@ module.exports = function (db) {
                 title: 'DODO (Script Manager)'
             });
         });
+    router.route('/settings/script/:script_name/:script_version')
+        .get(function (req, res) {
+            let scriptName = req.params.script_name;
+            let scriptVersion = req.params.script_version;
+            let scriptSettings = new ScriptSettings(scriptName, scriptVersion);
+            scriptSettings.getScriptSettings()
+                .then(data => {
+                    data.scriptName = scriptName;
+                    data.scriptVersion = scriptVersion;
+                    res.render('settings.html', {
+                        title: 'Script Settings',
+                        settings: JSON.stringify(data)
+                    });
+                })
+                .catch(err => {
+                    res.render('error.html', {
+                        err: err
+                    });
+                });
+        });
 
 
     routerApi.route('/script')
@@ -74,7 +94,7 @@ module.exports = function (db) {
                 });
         });
 
-    routerApi.route('/script/settings/:script_name/:script_version')
+    routerApi.route('/script/settings/:script_name/:script_version')   // SETTINGS
         .get(function (req, res) {
             let result = {status: 'fail'};
             let scriptName = req.params.script_name;
@@ -88,6 +108,8 @@ module.exports = function (db) {
             scriptSettings.getScriptSettings()
                 .then(data => {
                     result.status = 'success';
+                    data.scriptName = scriptName;
+                    data.scriptVersion = scriptVersion;
                     result.data = data;
                     return res.json(result);
                 })

@@ -29,3 +29,4 @@ nbproject
 /getProductionData.sh
 /test/db*
 /db*
+deploy.sh

@@ -11,17 +11,17 @@ module.exports = function (db) {
             this.filter = {scriptname: this.scriptname, scriptversion: this.scriptversion};
         }
 
-
         getScriptSettings() {
             return Promise.resolve()
                 .then(_ => {
                     return this.collection.findOneAsync(this.filter)
                 })
                 .then(res=> {
-                    if (!res) return {};
+                    if (!res) res = {};
                     // delete res.scriptname;
                     // delete res.scriptversion;
                     delete res._id;
+                    if (!res.beta) { res.beta = false;}
                     return this._setDefaultSettings(res)
                 });
 
