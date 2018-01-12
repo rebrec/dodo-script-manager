@@ -15,7 +15,6 @@ module.exports = function (db) {
         }
 
         // List Script Versions from scriptname
-
         listVersions() {
             return this.find({scriptname: this.scriptname})
                 .then(docs => {
