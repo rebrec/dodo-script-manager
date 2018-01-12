@@ -21,7 +21,7 @@ module.exports = function (db) {
                     // delete res.scriptname;
                     // delete res.scriptversion;
                     delete res._id;
-                    if (!res.beta) { res.beta = true;} // default state for scripts is beta=true
+                    if (!res.beta) { res.beta = "true";} // default state for scripts is beta=true
                     return this._setDefaultSettings(res)
                 });
 
