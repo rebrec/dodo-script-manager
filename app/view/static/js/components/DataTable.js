@@ -54,7 +54,7 @@ class DataTable {
 
     _build() {
         this._sortDatasourceCache();
-
+        let panelSelector;
         let c = this._DOMContainer;
         let html = '';
         html += '<div class="row">';
@@ -81,9 +81,13 @@ class DataTable {
         html += '                <div class="table-content">';
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
+            let panelSelector = hostObj.hostname;
             html += '                <div class="highlightable bottom-line row" data-hostobj=\'' + JSON.stringify(hostObj) + '\'>';
             html += '                    <div class="col-xs-3 field-hostname">';
             html += '                        ' + hostObj.hostname;
+            if (Object.keys(hostObj.additionnalData).length > 0) {
+                html += '                        <a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="glyphicon glyphicon-info-sign datatable-additionnaldata-btn"></a>';
+            }
             html += '                    </div>';
             html += '                    <div class="col-xs-3">';
             html += '                        ' + hostObj.lastCheckTimestamp;
@@ -95,6 +99,11 @@ class DataTable {
             html += '                        ' + hostObj.executed;
             html += '                    </div>';
             html += '                </div>';
+            if (Object.keys(hostObj.additionnalData).length > 0) {
+                html += '                <div class="row datatable-additionaldata-panel collapse" id="' + panelSelector + '" >';
+                html += this._buildAditionnalData(hostObj.additionnalData);
+                html += '                </div>';
+            }
         }
         html += '                </div>';
 
@@ -107,6 +116,23 @@ class DataTable {
 
     }
 
+    _buildAditionnalData(additionalData){
+        let html = '';
+        let keys = Object.keys(additionalData);
+        for (let i=0;i<keys.length;i++){
+            let key = keys[i];
+            let value = additionalData[key];
+            html += '   <div class="col-xs-6">';
+            html += '       ' + key;
+            html += '   </div>';
+            html += '   <div class="col-xs-6">';
+            html += '       ' + value;
+            html += '   </div>';
+
+        }
+
+        return html;
+    }
     _onRemoveBtnClick(e) {
         let selectedName = $(e.target).parent('div').parent('div').data('hostobj').hostname;
         this.onRemove(selectedName);
