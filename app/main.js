@@ -14,6 +14,8 @@ module.exports = function (db) {
 
     app.use('/vendor/jquery', express.static(config.projectRoot + '/node_modules/jquery/dist/'));
     app.use('/vendor/bootstrap', express.static(config.projectRoot + '/node_modules/bootstrap/dist/'));
+    app.use('/vendor/tether', express.static(config.projectRoot + '/node_modules/tether/dist/'));
+    app.use('/vendor/font-awesome', express.static(config.projectRoot + '/node_modules/font-awesome/'));
     app.use(express.static(config.projectRoot + '/app/view/static'));
 
     app.use(bodyParser.urlencoded({extended: true}));

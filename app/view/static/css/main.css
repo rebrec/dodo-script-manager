@@ -18,4 +18,8 @@
 .beta-mode--production{
     background-color: #00bd00;
 }
-lp
+
+.datatable-additionaldata-panel {
+    background-color: #a7b3ba;
+    border: 1px solid;
+}

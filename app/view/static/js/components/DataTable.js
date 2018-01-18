@@ -57,6 +57,7 @@ class DataTable {
         let panelSelector;
         let c = this._DOMContainer;
         let html = '';
+
         html += '<div class="row">';
         html += '    <h2 class="col-12-sp">';
         html += '        Total Count : ' + this._datasourceCache.length;
@@ -64,44 +65,46 @@ class DataTable {
         html += '</div>';
         // Header
         html += '                <div class="bottom-line row">';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="hostname"><b>';
+        html += '                    <div class="col-sm-3 datatable-_sort-btn" data-columnname="hostname"><b>';
         html += '                        ' + 'Hostname';
         html += '                    </b></div>';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="lastCheckTimestamp"><b>';
+        html += '                    <div class="col-sm-3 datatable-_sort-btn" data-columnname="lastCheckTimestamp"><b>';
         html += '                        ' + 'Last Check Time';
         html += '                    </b></div>';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="recordTimestamp"><b>';
+        html += '                    <div class="col-sm-3 datatable-_sort-btn" data-columnname="recordTimestamp"><b>';
         html += '                        ' + 'Execution Time';
         html += '                    </b></div>';
-        html += '                    <div class="col-xs-3 datatable-_sort-btn" data-columnname="executed"><b>';
+        html += '                    <div class="col-sm-3 datatable-_sort-btn" data-columnname="executed"><b>';
         html += '                        ' + 'Executed';
         html += '                    </b></div>';
         html += '                </div>';
         // Rows
-        html += '                <div class="table-content">';
+        html += '                <div class="table-content" id="accordion">';
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
             let panelSelector = hostObj.hostname;
             html += '                <div class="highlightable bottom-line row" data-hostobj=\'' + JSON.stringify(hostObj) + '\'>';
-            html += '                    <div class="col-xs-3 field-hostname">';
+            html += '                    <div class="col-sm-3 field-hostname">';
             html += '                        ' + hostObj.hostname;
             if (Object.keys(hostObj.additionnalData).length > 0) {
-                html += '                        <a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="glyphicon glyphicon-info-sign datatable-additionnaldata-btn"></a>';
+                html += '                        <a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn"></a>';
             }
             html += '                    </div>';
-            html += '                    <div class="col-xs-3">';
+            html += '                    <div class="col-sm-3">';
             html += '                        ' + hostObj.lastCheckTimestamp;
             html += '                    </div>';
-            html += '                    <div class="col-xs-3">';
+            html += '                    <div class="col-sm-3">';
             html += '                        ' + hostObj.recordTimestamp;
             html += '                    </div>';
-            html += '                    <div class="col-xs-3"><span class="pull-right glyphicon glyphicon-remove datatable-remove-btn"></span>';
+            html += '                    <div class="col-sm-3"><span class="pull-right fa fa-remove datatable-remove-btn"></span>';
             html += '                        ' + hostObj.executed;
             html += '                    </div>';
             html += '                </div>';
             if (Object.keys(hostObj.additionnalData).length > 0) {
-                html += '                <div class="row datatable-additionaldata-panel collapse" id="' + panelSelector + '" >';
+                html += '                <div class="collapse" data-parent="#accordion" id="' + panelSelector + '">';
+                html += '                  <div class="row datatable-additionaldata-panel" >';
                 html += this._buildAditionnalData(hostObj.additionnalData);
+                html += '                  </div>';
                 html += '                </div>';
             }
         }
@@ -122,10 +125,10 @@ class DataTable {
         for (let i=0;i<keys.length;i++){
             let key = keys[i];
             let value = additionalData[key];
-            html += '   <div class="col-xs-6">';
+            html += '   <div class="col-sm-6">';
             html += '       ' + key;
             html += '   </div>';
-            html += '   <div class="col-xs-6">';
+            html += '   <div class="col-sm-6">';
             html += '       ' + value;
             html += '   </div>';
 
