@@ -28,7 +28,6 @@ class DataTable {
     setDataSourceURL(url) {
         this._datasourceURL = url;
         return this._updateDataSource()
-            .then(this._build.bind(this));
     }
 
    
@@ -41,7 +40,8 @@ class DataTable {
                 this._datasourceCache = data.data;
                 return resolve();
             });
-        });
+        })
+            .then(this._build.bind(this));
     }
 
     _sortDatasourceCache() {
@@ -76,12 +76,17 @@ class DataTable {
         let html = '';
 
         html += '<div class="row">';
-        html += '    <div class="col-sm-6"><h2>';
+        html += '    <div class="col-sm-4"><h2>';
         html += '        Executed : ' + executed.length;
         html += '    </h2></div>';
-        html += '    <div class="col-sm-6"><h2>';
+        html += '    <div class="col-sm-4"><h2>';
         html += '        Total Count : ' + this._datasourceCache.length;
         html += '    </h2></div>';
+        html += '    <div class="col-sm-3">';
+        html += '    </div>';
+        html += '    <div class="col-sm-1">';
+        html += '        <span style="font-size:1.5rem" class="fa fa-refresh datable-refresh-btn right"></span>';
+        html += '    </div>';
         html += '</div>';
         // Header
         html += '<div class="bottom-line row">';
@@ -94,10 +99,10 @@ class DataTable {
         html += '   <div class="col-sm-3 datatable-_sort-btn" data-columnname="recordTimestamp"><b>';
         html += '   ' + 'Execution Time';
         html += '   </b></div>';
-        html += '   <div class="col-sm-1 datatable-_sort-btn" data-columnname="executed"><b>';
+        html += '   <div class="col-sm-2 datatable-_sort-btn" data-columnname="executed"><b>';
         html += '       ' + 'Executed';
         html += '   </b></div>';
-        html += '   <div class="col-sm-2 datatable-_sort-btn" data-columnname="executed"><b>';
+        html += '   <div class="col-sm-1"><b>';
         html += '       ' + 'Actions';
         html += '   </b></div>';
         html += '</div>';
@@ -120,23 +125,23 @@ class DataTable {
             html += '                    <div class="col-sm-3">';
             html += '                        ' + hostObj.recordTimestamp;
             html += '                    </div>';
-            html += '                    <div class="col-sm-1">';
+            html += '                    <div class="col-sm-2">';
             html += '                        ' + hostObj.executed;
             html += '                    </div>';
-            html += '                    <div class="col-sm-2">';
+            html += '                    <div class="col-sm-1">';
             html += '                       <div class="row">';
-            html += '                           <div class="col-1 align-middle align-items-center">';
+            html += '                           <div class="col-1 text-center">';
 
             if (Object.keys(hostObj.additionnalData).length > 0) {
                 html += '<a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn" data-parent="#accordion" title="Show Details"></a>';
             }
             html += '                           </div>';
-            html += '                           <div class="col-1 align-middle align-items-center">';
+            html += '                           <div class="col-1 text-center">';
 
             let testerBtnTitle = isTester ? 'Remove from Testers' : 'Add to Testers';
             html += '                                <span class="fa fa-flask datatable-btn-add-tester ' + cssTester + '" title="' + testerBtnTitle + '"></span>';
             html += '                           </div>';
-            html += '                           <div class="col- align-middle align-items-center">';
+            html += '                           <div class="col-1 text-center">';
             html += '                               <span class="fa fa-remove datatable-remove-btn" title="Remove"></span>';
             html += '                           </div>';
             html += '                       </div>';
@@ -167,6 +172,7 @@ class DataTable {
         $('.beta-tester').on('click', this._onRemoveTesterClick.bind(this));
         selectNode.on('click', this._onRemoveBtnClick.bind(this));
         $('.datatable-_sort-btn').on('click', this._sortBtnClick.bind(this));
+        $('.datable-refresh-btn').on('click', this._updateDataSource.bind(this));
 
     }
 
@@ -205,7 +211,8 @@ class DataTable {
     }
 
     _sortBtnClick(e){
-        let selectedCol = $(e.target).data('columnname');
+        let selectedCol = $(e.target).parent('div').data('columnname');
+        console.log('col : ' + selectedCol);
         this._sort(selectedCol);
     }
 

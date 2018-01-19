@@ -100,9 +100,10 @@ module.exports = function (db) {
                         delete doc._id;
                         delete doc.scriptname;
                         delete doc.scriptversion;
+                        if (!doc.hasOwnProperty('executed')) doc.executed = false;
                         // compatibility with previous version (fix missing fields)
                         if (!doc.hasOwnProperty('lastCheckTimestamp')) doc.lastCheckTimestamp = 'not available?';
-                        if (!doc.hasOwnProperty('recordTimestamp')) doc.recordTimestamp = 'not saved';
+                        if (!doc.hasOwnProperty('recordTimestamp')) doc.recordTimestamp = '';
                         if (!doc.hasOwnProperty('additionnalData')) doc.additionnalData = {};
                         res.push(doc);
                     }
