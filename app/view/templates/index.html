@@ -1,42 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/vendor/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/css/main.css">
+{% extends "parent.html" %}
 
-    <title>{{ title }}</title>
-</head>
-<body>
-<div class="jumbotron">
-    <h1>{{ title }}</h1>
-</div>
-
-<div class="container">
-
-    <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="setting-status"></div>
-        <div class="col-lg-2 col-md-1 col-sm-3 col-xs-12">Scripts Availables</div>
-        <div class="col-lg-3 col-md-4 col-sm-9 col-xs-12" id="dropdown-scriptname"></div>
-        <div class="hidden-md-down  col-lg-2 col-md-2"></div>
-        <div class="col-lg-2 col-md-1 col-sm-3 col-xs-12">Version Availables</div>
-        <div class="col-lg-3 col-md-4 col-sm-9 col-xs-12" id="dropdown-scriptversion"></div>
-    </div>
-    <div class="row">
-        <div class="col-md-12" id="host-datatable">
-        </div>
-    </div>
-</div>
-<script src="/vendor/jquery/jquery.min.js"></script>
-<script src="/vendor/tether/js/tether.min.js"></script>
-<script src="/vendor/bootstrap/js/bootstrap.js"></script>
+{% block specific_js %}
 <script src="/js/main.js"></script>
-<script src="/js/config.js"></script>
-<script src="/js/components/DropDownList.js"></script>
-<script src="/js/components/DataTable.js"></script>
-<script src="/js/components/SettingStatus.js"></script>
-<script src="/js/helpers/Api.js"></script>
+{% endblock %}
 
-</body>
-</html>
+{% block container %}
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="setting-status"></div>
+    <div class="col-lg-2 col-md-1 col-sm-3 col-xs-12">Scripts Availables</div>
+    <div class="col-lg-3 col-md-4 col-sm-9 col-xs-12" id="dropdown-scriptname"></div>
+    <div class="hidden-md-down  col-lg-2 col-md-2"></div>
+    <div class="col-lg-2 col-md-1 col-sm-3 col-xs-12">Version Availables</div>
+    <div class="col-lg-3 col-md-4 col-sm-9 col-xs-12" id="dropdown-scriptversion"></div>
+</div>
+<div class="row">
+    <div class="col-md-12" id="host-datatable">
+    </div>
+</div>
+{% endblock %}

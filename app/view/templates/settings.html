@@ -1,44 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/main.css">
+{% extends "parent.html" %}
 
-    <title>{{ title }}</title>
-</head>
-<body>
-<div class="jumbotron">
-    <h1>{{ title }}</h1>
+{% block specific_js %}
+<script type="text/javascript">
+    let scriptSettings = {{ settings | safe }};
+</script>
+<script src="/js/scriptSettings.js"></script>
+{% endblock %}
+
+{% block container %}
+<div class="row">
+    <div class="sm">Scripts Name :</div>
+    <div class="sm" id="script-settings-label-scriptname"></div>
 </div>
+<div class="row">
+    <div class="col-sm-3">Scripts Version :</div>
+    <div class="col-sm-3" id="script-settings-label-scriptversion"></div>
+</div>
+<div class="row" id="script-settings-field-beta"></div>
+<div class="row">
+    <div class="col-md-12"><b>List of Beta Testers</b></div>
+</div>
+<div class="row" id="script-settings-tester-list"></div>
+{% endblock %}
 
-<div class="container">
-
-    <div class="row">
-        <div class="col-md-3">Scripts Name :</div>
-        <div class="col-md-3" id="script-settings-label-scriptname"></div>
-    </div>
-    <div class="row">
-        <div class="col-md-3">Scripts Version :</div>
-        <div class="col-md-3" id="script-settings-label-scriptversion"></div>
-    </div>
-    <div class="row" id="script-settings-field-beta"></div>
-    <div class="row">
-        <div class="col-md-12"><b>List of Beta Testers</b></div>
-    </div>
-    <div class="row" id="script-settings-tester-list"></div>
-    <script type="text/javascript">
-        let scriptSettings = {{ settings|safe }};
-    </script>
-    <script src="/vendor/jquery/jquery.min.js"></script>
-    <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/js/scriptSettings.js"></script>
-    <script src="/js/config.js"></script>
-    <script src="/js/components/DropDownList.js"></script>
-    <script src="/js/components/DataTable.js"></script>
-    <script src="/js/components/SettingStatus.js"></script>
-    <script src="/js/components/SettingsBetaToggle.js"></script>
-    <script src="/js/components/SettingsTesterList.js"></script>
-
-</body>
-</html>

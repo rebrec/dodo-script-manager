@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+
+    {% block header %}
+    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/vendor/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    {% endblock %}
+
+    {% block specific_css %}
+    {% endblock %}
+
+</head>
+<body>
+<div class="jumbotron">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="container">
+    {% block container %}
+    {% endblock %}
+</div>
+
+
+{% block specific_js %}
+{% endblock %}
+
+{% block footer %}
+<script src="/vendor/jquery/jquery.min.js"></script>
+<script src="/vendor/tether/js/tether.min.js"></script>
+<script src="/vendor/bootstrap/js/bootstrap.js"></script>
+<script src="/js/config.js"></script>
+<script src="/js/components/DropDownList.js"></script>
+<script src="/js/components/DataTable.js"></script>
+<script src="/js/components/SettingStatus.js"></script>
+<script src="/js/components/SettingsBetaToggle.js"></script>
+<script src="/js/components/SettingsTesterList.js"></script>
+<script src="/js/helpers/Api.js"></script>
+{% endblock %}
+
+</body>
+</html>
