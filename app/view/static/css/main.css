@@ -23,3 +23,12 @@
     background-color: #a7b3ba;
     border: 1px solid;
 }
+
+
+.beta-tester{
+    color: #41ec52;
+}
+
+.not-beta-tester{
+    color: #ec2a2d;
+}

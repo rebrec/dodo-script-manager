@@ -55,11 +55,11 @@ class SettingStatus {
 
         let html = '';
         html += '<div class="row" id="beta-mode">';
-        html += '  <div class="col-lg-11 ' + cssClass + '" id="beta-mode">';
+        html += '  <div class="col-sm-11 ' + cssClass + '" id="beta-mode">';
         html += '    ' + textContent;
         html += '  </div>';
-        html += '  <div class="col-lg-1 right ' + cssClass + '">';
-        html += '    <a href="' + this._config.scriptSettingsURL + '/' + this._scriptname + '/' + this._scriptversion +'" class="glyphicon glyphicon-cog"></a>';
+        html += '  <div class="col-sm-1 right ' + cssClass + '">';
+        html += '    <a href="' + this._config.scriptSettingsURL + '/' + this._scriptname + '/' + this._scriptversion +'" class="fa fa-cog"></a>';
         html += '  </div>';
         html += '</div>';
         c.innerHTML = html;
