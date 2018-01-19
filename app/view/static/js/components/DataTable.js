@@ -130,18 +130,18 @@ class DataTable {
             html += '                    </div>';
             html += '                    <div class="col-sm-1">';
             html += '                       <div class="row">';
-            html += '                           <div class="col-1 text-center">';
+            html += '                           <div class="col-2 text-center">';
 
             if (Object.keys(hostObj.additionnalData).length > 0) {
                 html += '<a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn" data-parent="#accordion" title="Show Details"></a>';
             }
             html += '                           </div>';
-            html += '                           <div class="col-1 text-center">';
+            html += '                           <div class="col-2 text-center">';
 
             let testerBtnTitle = isTester ? 'Remove from Testers' : 'Add to Testers';
             html += '                                <span class="fa fa-flask datatable-btn-add-tester ' + cssTester + '" title="' + testerBtnTitle + '"></span>';
             html += '                           </div>';
-            html += '                           <div class="col-1 text-center">';
+            html += '                           <div class="col-2 text-center">';
             html += '                               <span class="fa fa-remove datatable-remove-btn" title="Remove"></span>';
             html += '                           </div>';
             html += '                       </div>';
