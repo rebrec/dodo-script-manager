@@ -69,12 +69,19 @@ class DataTable {
     _build() {
         this._sortDatasourceCache();
         let c = this._DOMContainer;
+        let executedCount = 0;
+        let executed = this._datasourceCache.filter(elt => {
+            return elt.executed == true;
+        });
         let html = '';
 
         html += '<div class="row">';
-        html += '    <h2 class="col-12-sp">';
+        html += '    <div class="col-sm-6"><h2>';
+        html += '        Executed : ' + executed.length;
+        html += '    </h2></div>';
+        html += '    <div class="col-sm-6"><h2>';
         html += '        Total Count : ' + this._datasourceCache.length;
-        html += '    </h2>';
+        html += '    </h2></div>';
         html += '</div>';
         // Header
         html += '<div class="bottom-line row">';
@@ -162,6 +169,7 @@ class DataTable {
         $('.datatable-_sort-btn').on('click', this._sortBtnClick.bind(this));
 
     }
+
     _buildDetailPanel(panelSelector, hostObj){
         let additionalData = hostObj.additionnalData || {};
         if (Object.keys(additionalData).length === 0) return '';
@@ -175,10 +183,11 @@ class DataTable {
         for (let i=0;i<keys.length;i++){
             let key = keys[i];
             let value = additionalData[key];
-            html += '<div class="col-sm-6">';
+            html += '<div class="col-sm-3">';
+            html += '</div>';            html += '<div class="col-sm-4">';
             html += '   ' + key;
             html += '</div>';
-            html += '<div class="col-sm-6">';
+            html += '<div class="col-sm-4">';
             html += '   ' + value;
             html += '</div>';
             // break;
