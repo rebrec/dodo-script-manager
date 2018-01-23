@@ -54,12 +54,10 @@ class SettingsBetaToggle{
         let cssClass = this.beta ? 'beta-mode--beta' : 'beta-mode--production';
 
         let html = '';
-        html += '<div>';
-        html += '  <div class="col-md-3">Script Mode : </div>';
-        html += '  <div class="col-md-3 ' + cssClass + '" id="' + this._clickSelector + '">';
+        html += '  <div class="col-md-6">Script Mode : </div>';
+        html += '  <div class="col-md-6 ' + cssClass + '" id="' + this._clickSelector + '">';
         html += '    ' + textContent;
         html += '  </div>';
-        html += '</div>';
         c.innerHTML = html;
         let selectSelector = '#' + this._clickSelector;
         let selectNode = $(selectSelector);
