@@ -46,7 +46,7 @@ class SettingStatus {
     _build() {
         let c = this._DOMContainer;
         let textContent;
-        if (this.beta){
+        if (this.beta == 'true'){
             textContent = 'Script en Beta (fonctionnement inverse)';
         } else {
             textContent = 'Script en Production';
