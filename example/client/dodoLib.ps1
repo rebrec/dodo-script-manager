@@ -8,6 +8,8 @@ $global:DODO_BASE_URL          = "http://$DODO_HOSTNAME" + ":" + "$DODO_PORT/api
 $global:DODO_SCRIPT_NAME       = "Scriptname-not-defined"
 $global:DODO_SCRIPT_VERSION    = "Scriptversion-not-defined"
 
+[System.Collections.ArrayList]$global:DODO_LOGS = @()
+
 #override this function if you need a different way to identify unique execution (per user, per computer, etc)
 Function global:Get-UniqueExecutionId {  
     return "$env:COMPUTERNAME"
@@ -19,7 +21,21 @@ Function global:Get-AdditionnalData{
             computername       = $env:COMPUTERNAME
             os                 = $env:OS
             powershell_version = "$($host.version)"
+            logs               = $DODO_LOGS
     }
+}
+
+Function logDodo{
+    param($message)
+    $global:DODO_LOGS.Add($message) | out-null
+    Write-Host "$message"
+
+}
+
+Function Get-JSONAdditionalData {
+    $additionnalData = Get-AdditionnalData
+    Write-Host "JSON : "Get-AdditionnalData
+    return ConvertTo-Json $additionnalData
 }
 
 Function isAlreadyExecuted {
@@ -47,9 +63,7 @@ Function isAlreadyExecuted {
 
 Function Save-ExecutionStatus {
     param()
-	$additionnalData = Get-AdditionnalData
-    $additionnalJSONData = ConvertTo-Json $additionnalData
-    
+    $additionnalJSONData = Get-JSONAdditionalData
 
     $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 

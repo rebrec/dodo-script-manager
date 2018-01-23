@@ -189,12 +189,21 @@ class DataTable {
         for (let i=0;i<keys.length;i++){
             let key = keys[i];
             let value = additionalData[key];
-            html += '<div class="col-sm-3">';
-            html += '</div>';            html += '<div class="col-sm-4">';
+            html += '<div class="col-sm-1">';
+            html += '</div>';
+            html += '<div class="col-sm-3 datatable-additionnaldata-key">';
             html += '   ' + key;
             html += '</div>';
-            html += '<div class="col-sm-4">';
-            html += '   ' + value;
+            html += '<div class="col-sm-8 datatable-additionnaldata-value">';
+            if (key === 'logs' && value.hasOwnProperty('length')){
+                html += '<div class="datatable-additionnaldata-logs">';
+                for (let j=0;j<value.length;j++) {
+                    html += '   ' + value[j] + '<br/>';
+                }
+                html += '</div>';
+            } else {
+                html += '   ' + value;
+            }
             html += '</div>';
             // break;
         }
