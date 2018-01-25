@@ -108,54 +108,57 @@ class DataTable {
         html += '</div>';
         // Rows
         html += '<div class="table-content accordion" id="accordion">';
+        html += '</div>';
+        c.innerHTML = html;
 
+        let accordion = $('#accordion');
         for (let i = 0; i < this._datasourceCache.length; i++) {
             let hostObj = this._datasourceCache[i];
             let isTester = this._isTester(hostObj.hostname);
             let cssTester = isTester ? 'beta-tester' : 'not-beta-tester';
             let panelSelector = hostObj.hostname;
-            html += '                <div class="highlightable bottom-line row" data-hostobj=\'' + JSON.stringify(hostObj) + '\'>';
-            html += '                   <div class="col-sm-3 field-hostname panel">';
-            html += '                        ' + hostObj.hostname;
+            let div = $('<div class="highlightable bottom-line row"></div>').data('hostobj', hostObj);
+            
+            let divBody = '';
+            divBody += '                   <div class="col-sm-3 field-hostname panel">';
+            divBody += '                        ' + hostObj.hostname;
 
-            html += '                    </div>';
-            html += '                    <div class="col-sm-3">';
-            html += '                        ' + hostObj.lastCheckTimestamp;
-            html += '                    </div>';
-            html += '                    <div class="col-sm-3">';
-            html += '                        ' + hostObj.recordTimestamp;
-            html += '                    </div>';
-            html += '                    <div class="col-sm-2">';
-            html += '                        ' + hostObj.executed;
-            html += '                    </div>';
-            html += '                    <div class="col-sm-1">';
-            html += '                       <div class="row">';
-            html += '                           <div class="col-2 text-center">';
+            divBody += '                    </div>';
+            divBody += '                    <div class="col-sm-3">';
+            divBody += '                        ' + hostObj.lastCheckTimestamp;
+            divBody += '                    </div>';
+            divBody += '                    <div class="col-sm-3">';
+            divBody += '                        ' + hostObj.recordTimestamp;
+            divBody += '                    </div>';
+            divBody += '                    <div class="col-sm-2">';
+            divBody += '                        ' + hostObj.executed;
+            divBody += '                    </div>';
+            divBody += '                    <div class="col-sm-1">';
+            divBody += '                       <div class="row">';
+            divBody += '                           <div class="col-2 text-center">';
 
             if (Object.keys(hostObj.additionnalData).length > 0) {
-                html += '<a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn" data-parent="#accordion" title="Show Details"></a>';
+                divBody += '<a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn" data-parent="#accordion" title="Show Details"></a>';
             }
-            html += '                           </div>';
-            html += '                           <div class="col-2 text-center">';
+            divBody += '                           </div>';
+            divBody += '                           <div class="col-2 text-center">';
 
             let testerBtnTitle = isTester ? 'Remove from Testers' : 'Add to Testers';
-            html += '                                <span class="fa fa-flask datatable-btn-add-tester ' + cssTester + '" title="' + testerBtnTitle + '"></span>';
-            html += '                           </div>';
-            html += '                           <div class="col-2 text-center">';
-            html += '                               <span class="fa fa-remove datatable-remove-btn" title="Remove"></span>';
-            html += '                           </div>';
-            html += '                       </div>';
+            divBody += '                                <span class="fa fa-flask datatable-btn-add-tester ' + cssTester + '" title="' + testerBtnTitle + '"></span>';
+            divBody += '                           </div>';
+            divBody += '                           <div class="col-2 text-center">';
+            divBody += '                               <span class="fa fa-remove datatable-remove-btn" title="Remove"></span>';
+            divBody += '                           </div>';
+            divBody += '                       </div>';
 
-            html += '                    </div>';
-            html += '                </div>';
+            divBody += '                    </div>';
 
-            html += this._buildDetailPanel(panelSelector, hostObj);
+            divBody += this._buildDetailPanel(panelSelector, hostObj);
             // if (i>4)break;
+            div.append(divBody);
+            accordion.append(div);
         }
 
-        html += '                </div>';
-
-        c.innerHTML = html;
         let selectSelector = '.datatable-remove-btn';
         let selectNode = $(selectSelector);
 
