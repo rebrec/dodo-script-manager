@@ -27,9 +27,11 @@ Function global:Get-AdditionnalData{
 
 Function logDodo{
     param($message)
-    $global:DODO_LOGS.Add($message) | out-null
-    Write-Host "$message"
-
+    if ($message -is [array]) { $message | %{ logDodo($_) }} # we can receive command output stored into a variable as an array of lines.
+    else { 
+        $global:DODO_LOGS.Add($message) | out-null 
+        Write-Host "$message"
+    }
 }
 
 Function Get-JSONAdditionalData {
