@@ -300,6 +300,12 @@ module.exports = function (db) {
                 return res.json(result);
             }
             let executed = true;
+            // could be better implemented (reuse additionnalData for transmitting execution status to ease feature implementation (add the possibility to save-execution status to send logs and additionnal data but note that the status is not good (false))
+            if (additionnalData.hasOwnProperty('executed')) {
+                executed = additionnalData.executed;
+                delete additionnalData.executed;
+            }
+
             let scriptData = new ScriptData(scriptName, scriptVersion);
             return scriptData.recordExecution(hostname, additionnalData, executed)
 

@@ -22,6 +22,7 @@ Function global:Get-AdditionnalData{
             os                 = $env:OS
             powershell_version = "$($host.version)"
             logs               = $DODO_LOGS
+			executed		   = $true
     }
 }
 
@@ -32,12 +33,6 @@ Function logDodo{
         $global:DODO_LOGS.Add($message) | out-null 
         Write-Host "$message"
     }
-}
-
-Function Get-JSONAdditionalData {
-    $additionnalData = Get-AdditionnalData
-    Write-Host "JSON : "Get-AdditionnalData
-    return ConvertTo-Json $additionnalData
 }
 
 Function isAlreadyExecuted {
@@ -62,11 +57,12 @@ Function isAlreadyExecuted {
     return $res
 }
 
-
 Function Save-ExecutionStatus {
-    param()
-    $additionnalJSONData = Get-JSONAdditionalData
-
+    param($executed=$true)
+	$additionalData = Get-AdditionnalData
+	$additionalData.executed = $executed
+    $additionnalJSONData = ConvertTo-Json $additionalData
+	
     $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 
         Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
