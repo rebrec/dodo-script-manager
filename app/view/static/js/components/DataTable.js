@@ -165,7 +165,7 @@ class DataTable {
         // we need to register an handler here because bootstrap don't do it using 'live' ... a bit hackish but works
         $('[data-toggle="collapse"]').click(function(e){
             e.preventDefault();
-            var target_element= $(this).attr("href");
+            var target_element= $(this).attr("href").replace(/\./g, '\\\.');
             $('.collapse').collapse('hide');
             $(target_element).collapse('toggle');
             return false;
