@@ -18,12 +18,22 @@ Function global:Get-UniqueExecutionId {
 Function global:Get-AdditionnalData{
     return @{
             username           = $env:USERNAME
+            lastBootTime       = Get-LastBootTime
             computername       = $env:COMPUTERNAME
             os                 = $env:OS
             powershell_version = "$($host.version)"
             logs               = $DODO_LOGS
-			executed		   = $true
     }
+}
+
+Function Get-LastBootTime {
+    $os = Get-WmiObject win32_operatingsystem -Property LastBootUpTime -ErrorAction SilentlyContinue
+    if ($os.LastBootUpTime) {
+       $uptime = (Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime)
+       #return $os.ConvertToDateTime($os.LastBootUpTime)
+       return "" + $uptime.Days + "D" + $uptime.Hours + "H" + $uptime.Minutes + "M" 
+    } else { return "N/A" }
+
 }
 
 Function logDodo{
@@ -33,6 +43,12 @@ Function logDodo{
         $global:DODO_LOGS.Add($message) | out-null 
         Write-Host "$message"
     }
+}
+
+Function Get-JSONAdditionalData {
+    $additionnalData = Get-AdditionnalData
+    Write-Host "JSON : "Get-AdditionnalData
+    return ConvertTo-Json $additionnalData
 }
 
 Function isAlreadyExecuted {
@@ -57,12 +73,11 @@ Function isAlreadyExecuted {
     return $res
 }
 
+
 Function Save-ExecutionStatus {
-    param($executed=$true)
-	$additionalData = Get-AdditionnalData
-	$additionalData.executed = $executed
-    $additionnalJSONData = ConvertTo-Json $additionalData
-	
+    param()
+    $additionnalJSONData = Get-JSONAdditionalData
+
     $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 
         Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
