@@ -14,11 +14,11 @@ $global:DODO_SCRIPT_VERSION    = "Scriptversion-not-defined"
 Function global:Get-UniqueExecutionId {  
     return "$env:COMPUTERNAME"
 }
-
+#lastBootTime       = Get-LastBootTime
 Function global:Get-AdditionnalData{
     return @{
             username           = $env:USERNAME
-            lastBootTime       = Get-LastBootTime
+            lastBootTime       = "$(Get-LastBootTime)"
             computername       = $env:COMPUTERNAME
             os                 = $env:OS
             powershell_version = "$($host.version)"
@@ -31,7 +31,7 @@ Function Get-LastBootTime {
     if ($os.LastBootUpTime) {
        $uptime = (Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime)
        #return $os.ConvertToDateTime($os.LastBootUpTime)
-       return "" + $uptime.Days + "D" + $uptime.Hours + "H" + $uptime.Minutes + "M" 
+       return "" + $uptime.Days + "d" + $uptime.Hours + "h" + $uptime.Minutes + "m" 
     } else { return "N/A" }
 
 }
@@ -53,24 +53,29 @@ Function Get-JSONAdditionalData {
 
 Function isAlreadyExecuted {
     param()
-    $url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
-    $request = [System.Net.HttpWebRequest]::Create($url)
-    $request.Method = "GET"
-    #$request.ContentType = "application/json"
+    Try {
+        $url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
+        $request = [System.Net.HttpWebRequest]::Create($url)
+        $request.Method = "GET"
+        #$request.ContentType = "application/json"
 
-    $state = Invoke-RestMethod -Method Get -Uri $url
-    if ($state.status -ne 'success'){ 
-        Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
-        # Check wether the Log function is defined :
-        if ($(Get-ChildItem function: | where {$_.name -eq 'Log' }) -ne $null) {
-            Log "Something went wrong while running isAlreadyExecuted function. Result is $(ConvertTo-JSON $state)"
+        $state = Invoke-RestMethod -Method Get -Uri $url
+        if ($state.status -ne 'success'){ 
+            Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
+            # Check wether the Log function is defined :
+            if ($(Get-ChildItem function: | where {$_.name -eq 'Log' }) -ne $null) {
+                Log "Something went wrong while running isAlreadyExecuted function. Result is $(ConvertTo-JSON $state)"
+            }
+            return $false # default is to run if no answer from the server
         }
-        return $false # default is to run if no answer from the server
-    }
-    $res = $($state.data)
-    Write-Host "isAlreadyExecuted : $res"
+        $res = $($state.data)
+        Write-Host "isAlreadyExecuted : $res"
     
-    return $res
+        return $res
+    }
+    Catch {
+        return $false
+    }
 }
 
 
