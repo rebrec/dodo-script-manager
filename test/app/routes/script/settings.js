@@ -21,7 +21,7 @@ describe('API Endpoint /api/script/settings', function () {
             .end(function (err, res) {
                 expect(res).to.have.status(200);
                 expect(res).to.be.json;
-                expect(res.body.data.beta).to.be.equal(true);
+                expect(res.body.data.beta).to.be.equal('true');
                 expect(res.body.data.someother).to.be.an('string');
                 expect(res.body.data.someother).to.be.equal('param');
                 done();

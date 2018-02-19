@@ -25,7 +25,7 @@ describe('ScriptData', function () {
         // isAlreadyExecuted     $state = Invoke-RestMethod -Method Get -Uri "$BASE_URL/$SCRIPT_NAME/$SCRIPT_VERSION/$($env:COMPUTERNAME)"
         // Save-ExecutionStatus  $state = Invoke-RestMethod -Method Put -Uri "$BASE_URL/$SCRIPT_NAME/$SCRIPT_VERSION/$($env:COMPUTERNAME)"
         // ListHosts             GET ('/script/:script_name/:script_version')
-        return new Promise((resolve, reject)=> {
+        new Promise((resolve, reject)=> {
             console.log('get 1');
             chai.request(helper.app)
                 .get('/api/script/' + scriptName + '/' + scriptVersion + '/' + hostname)
@@ -121,6 +121,7 @@ describe('ScriptData', function () {
                         });
                 });
             })
+            .then(done);
     });
 
     // expect(res).to.be.json;
