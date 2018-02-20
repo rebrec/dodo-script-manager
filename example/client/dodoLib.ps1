@@ -17,12 +17,33 @@ Function global:Get-UniqueExecutionId {
 #lastBootTime       = Get-LastBootTime
 Function global:Get-AdditionnalData{
     return @{
-            username           = $env:USERNAME
+            username           = "$(Get-Username)"
             lastBootTime       = "$(Get-LastBootTime)"
+            ipaddresses        = "$(Get-IpAddresses)"
             computername       = $env:COMPUTERNAME
             os                 = $env:OS
             powershell_version = "$($host.version)"
             logs               = $DODO_LOGS
+    }
+}
+
+Function Get-Username {
+    Try { # mainly used to get real user logged on when running the script as SYSTEM
+        $user = (Get-Process -ProcessName explorer -IncludeUserName | select -first 1).Username
+        return $user
+    }
+    Catch {
+        return $env:USERNAME
+    }
+}
+
+Function Get-IpAddresses{
+    Try {
+        $addresses = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = True' | Select -ExpandProperty IPAddress
+        return $addresses
+    }
+    Catch {
+        return @()
     }
 }
 
@@ -55,6 +76,7 @@ Function isAlreadyExecuted {
     param()
     Try {
         $url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
+        Write-Host "Seding GET Request $url"
         $request = [System.Net.HttpWebRequest]::Create($url)
         $request.Method = "GET"
         #$request.ContentType = "application/json"
@@ -80,8 +102,10 @@ Function isAlreadyExecuted {
 
 
 Function Save-ExecutionStatus {
-    param()
-    $additionnalJSONData = Get-JSONAdditionalData
+    param($executed=$true)
+	$additionalData = Get-AdditionnalData
+	$additionalData.executed = $executed
+    $additionnalJSONData = ConvertTo-Json $additionalData
 
     $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 

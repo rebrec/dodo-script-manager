@@ -308,7 +308,6 @@ module.exports = function (db) {
 
             let scriptData = new ScriptData(scriptName, scriptVersion);
             return scriptData.recordExecution(hostname, additionnalData, executed)
-
                 .then(data => {
                     result.status = 'success';
                     result.data = '';

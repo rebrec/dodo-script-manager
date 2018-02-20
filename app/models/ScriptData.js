@@ -18,6 +18,11 @@ module.exports = function (db) {
                     return this.collection.findOneAsync({scriptname: this.scriptname, scriptversion: this.scriptversion, hostname: hostname})
                 })
                 .then(doc => {
+                    if (doc.hasOwnProperty('executed') && JSON.parse(doc.executed) === true && JSON.parse(executed) === false){
+                        // we will add additionnalData but will keep existing logs
+                        additionnalData.logs = doc.additionnalData.logs;
+                        executed = 'true';
+                    }
                     doc.recordTimestamp = recordTimestamp;
                     doc.additionnalData = additionnalData;
                     doc.executed        = executed;
