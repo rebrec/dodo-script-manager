@@ -48,9 +48,9 @@ class DataTable {
         this._datasourceCache.sort((a, b)=> {
             let res;
             if (this._sortAscending) {
-                res = (a[this._sortedKey] < b[this._sortedKey]) ? 1 : -1;
+                res = (JSON.parse(a[this._sortedKey]) < JSON.parse(b[this._sortedKey])) ? 1 : -1;
             } else {
-                res = (a[this._sortedKey] < b[this._sortedKey]) ? -1 : 1;
+                res = (JSON.parse(a[this._sortedKey]) < JSON.parse(b[this._sortedKey])) ? -1 : 1;
             }
             return res;
         })
