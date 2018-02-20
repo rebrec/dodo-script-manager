@@ -99,7 +99,9 @@ Function isAlreadyExecuted {
         return $false
     }
 }
-
+Function Update-EnvironmentData {
+    Save-ExecutionStatus $false # for now do nothing more than this, will allow to decouple later on
+}
 
 Function Save-ExecutionStatus {
     param($executed=$true)
