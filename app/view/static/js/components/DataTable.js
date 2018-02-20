@@ -71,7 +71,7 @@ class DataTable {
         let c = this._DOMContainer;
         let executedCount = 0;
         let executed = this._datasourceCache.filter(elt => {
-            return JSON.parse(elt.executed) == true;
+            return elt.executed == true;
         });
         let html = '';
 
