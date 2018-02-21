@@ -17,8 +17,10 @@ class DataTable {
             { title: 'Last Check Time', property: 'lastCheckTimestamp' },
             { title: 'Execution Time', property: 'recordTimestamp' },
             { title: 'IP Address', property: 'ipaddresses' },
+            { title: 'Username', property: 'username' },
             { title: 'Executed', property: 'executed' }
         ];
+        this._patchedColumns = ['ipaddresses', 'username']; // columns that will be copied frop additionnalData, to parent object
         this._scriptSettings = {
             testers:['PC1706-055']
         }
@@ -77,8 +79,12 @@ class DataTable {
                                // because every column need to be withing hostobj and not hostobj.additionnalData.something
         for (let i=0;i<this._datasourceCache.length;i++){
             let obj = this._datasourceCache[i];
-            obj.ipaddresses = '';
-            if (obj.additionnalData && obj.additionnalData.ipaddresses) obj.ipaddresses = obj.additionnalData.ipaddresses;
+            for (let j=0;j<this._patchedColumns.length;j++){
+                let patchedColumn = this._patchedColumns[j];
+                obj[patchedColumn] = '';
+                if (obj.additionnalData && obj.additionnalData[patchedColumn]) obj[patchedColumn] = obj.additionnalData[patchedColumn];
+            }
+
         }
     }
 
