@@ -135,8 +135,10 @@ class DataTable {
             let isTester = this._isTester(hostObj.hostname);
             let cssTester = isTester ? 'beta-tester' : 'not-beta-tester';
             let panelSelector = hostObj.hostname;
-            let tr = $('<tr class="highlightable bottom-line"></tr>').data('hostobj', hostObj);
-
+            let deploymentStateClass = '';
+            if (JSON.parse(hostObj.executed) == true) deploymentStateClass = 'table-success';
+            if (isTester && JSON.parse(hostObj.executed) == false) deploymentStateClass = 'table-warning';
+            let tr = $('<tr class="highlightable bottom-line ' + deploymentStateClass + '"></tr>').data('hostobj', hostObj);
             let trBody = '';
             for (let j=0;j < this._columns.length;j++){
                 let column = this._columns[j];
