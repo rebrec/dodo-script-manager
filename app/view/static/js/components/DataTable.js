@@ -12,6 +12,13 @@ class DataTable {
         this._sortedKey = 'hostname'
         this._sortAscending = true;
         this._scriptSettings = { testers:[]};
+        this._columns = [
+            { title: 'Hostname', property: 'hostname' },
+            { title: 'Last Check Time', property: 'lastCheckTimestamp' },
+            { title: 'Execution Time', property: 'recordTimestamp' },
+            { title: 'IP Address', property: 'ipaddresses' },
+            { title: 'Executed', property: 'executed' }
+        ];
         this._scriptSettings = {
             testers:['PC1706-055']
         }
@@ -66,7 +73,18 @@ class DataTable {
         this._build();
     }
 
+    _patchDatasourceCache() { // used temporarily to place additionnaldata.ipaddresses within hostobj (one level up)
+                               // because every column need to be withing hostobj and not hostobj.additionnalData.something
+        for (let i=0;i<this._datasourceCache.length;i++){
+            let obj = this._datasourceCache[i];
+            obj.ipaddresses = '';
+            if (obj.additionnalData && obj.additionnalData.ipaddresses) obj.ipaddresses = obj.additionnalData.ipaddresses;
+        }
+    }
+
     _build() {
+        this._patchDatasourceCache(); // used temporarily to place additionnaldata.ipaddresses within hostobj (one level up)
+                        // because every column need to be withing hostobj and not hostobj.additionnalData.something
         this._sortDatasourceCache();
         let c = this._DOMContainer;
         let executedCount = 0;
@@ -89,26 +107,26 @@ class DataTable {
         html += '    </div>';
         html += '</div>';
         // Header
-        html += '<div class="bottom-line row">';
-        html += '   <div class="col-sm-3 datatable-_sort-btn" data-columnname="hostname"><b>';
-        html += '       ' + 'Hostname';
-        html += '   </b></div>';
-        html += '   <div class="col-sm-3 datatable-_sort-btn" data-columnname="lastCheckTimestamp"><b>';
-        html += '   ' + 'Last Check Time';
-        html += '   </b></div>';
-        html += '   <div class="col-sm-3 datatable-_sort-btn" data-columnname="recordTimestamp"><b>';
-        html += '   ' + 'Execution Time';
-        html += '   </b></div>';
-        html += '   <div class="col-sm-2 datatable-_sort-btn" data-columnname="executed"><b>';
-        html += '       ' + 'Executed';
-        html += '   </b></div>';
-        html += '   <div class="col-sm-1"><b>';
+        html += '<table class="col-12">';
+        html += '   <thead>';
+        html += '      <tr>';
+        for (let i=0;i < this._columns.length;i++){
+            let column = this._columns[i];
+            html += '         <td class="datatable-_sort-btn" data-columnname="' + column.property + '"><b>';
+            html += '       ' + column.title;
+            html += '         </b></td>';
+        }
+        html += '         <td><b>';
         html += '       ' + 'Actions';
-        html += '   </b></div>';
-        html += '</div>';
+        html += '         </b></td>';
+        html += '      </tr>';
+        html += '   </thead>';
+
+        html += '   <tbody id="accordion">';
+        html += '   </tbody>';
+        html += '</table>';
+
         // Rows
-        html += '<div class="table-content accordion" id="accordion">';
-        html += '</div>';
         c.innerHTML = html;
 
         let accordion = $('#accordion');
@@ -117,47 +135,45 @@ class DataTable {
             let isTester = this._isTester(hostObj.hostname);
             let cssTester = isTester ? 'beta-tester' : 'not-beta-tester';
             let panelSelector = hostObj.hostname;
-            let div = $('<div class="highlightable bottom-line row"></div>').data('hostobj', hostObj);
-            
-            let divBody = '';
-            divBody += '                   <div class="col-sm-3 field-hostname panel">';
-            divBody += '                        ' + hostObj.hostname;
+            let tr = $('<tr class="highlightable bottom-line"></tr>').data('hostobj', hostObj);
 
-            divBody += '                    </div>';
-            divBody += '                    <div class="col-sm-3">';
-            divBody += '                        ' + hostObj.lastCheckTimestamp;
-            divBody += '                    </div>';
-            divBody += '                    <div class="col-sm-3">';
-            divBody += '                        ' + hostObj.recordTimestamp;
-            divBody += '                    </div>';
-            divBody += '                    <div class="col-sm-2">';
-            divBody += '                        ' + hostObj.executed;
-            divBody += '                    </div>';
-            divBody += '                    <div class="col-sm-1">';
-            divBody += '                       <div class="row">';
-            divBody += '                           <div class="col-2 text-center">';
+            let trBody = '';
+            for (let j=0;j < this._columns.length;j++){
+                let column = this._columns[j];
+                trBody  += '         <td>';
+                trBody  += '       ' + hostObj[column.property];
+                trBody  += '         </td>';
+            }
+            trBody += '                    <td class="">';
+            trBody += '                       <table>';
+            trBody += '                           <tr>';
+            trBody += '                              <td>';
 
             if (Object.keys(hostObj.additionnalData).length > 0) {
-                divBody += '<a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn" data-parent="#accordion" title="Show Details"></a>';
+                trBody += '<a data-toggle="collapse" href="#' + panelSelector +'" role="button" class="fa fa-info datatable-additionnaldata-btn" data-parent="#accordion" title="Show Details"></a>';
             }
-            divBody += '                           </div>';
-            divBody += '                           <div class="col-2 text-center">';
+            trBody += '                              </td>';
+            trBody += '                              <td>';
 
             let testerBtnTitle = isTester ? 'Remove from Testers' : 'Add to Testers';
-            divBody += '                                <span class="fa fa-flask datatable-btn-add-tester ' + cssTester + '" title="' + testerBtnTitle + '"></span>';
-            divBody += '                           </div>';
-            divBody += '                           <div class="col-2 text-center">';
-            divBody += '                               <span class="fa fa-remove datatable-remove-btn" title="Remove"></span>';
-            divBody += '                           </div>';
-            divBody += '                       </div>';
 
-            divBody += '                    </div>';
-
-            divBody += this._buildDetailPanel(panelSelector, hostObj);
+            trBody += '                              <td>';
+            trBody += '                                <span class="fa fa-flask datatable-btn-add-tester ' + cssTester + '" title="' + testerBtnTitle + '"></span>';
+            trBody += '                              </td>';
+            trBody += '                              <td>';
+            trBody += '                               <span class="fa fa-remove datatable-remove-btn" title="Remove"></span>';
+            trBody += '                              </td>';
+            trBody += '                           </tr>';
+            trBody += '                       </table>';
+            trBody += '                    </td>';
+            tr.append(trBody);
+            accordion.append(tr);
+            accordion.append(this._buildDetailPanel(panelSelector, hostObj));
             // if (i>4)break;
-            div.append(divBody);
-            accordion.append(div);
         }
+
+        html += '   </tbody>';
+        html += '</table>';
 
         let selectSelector = '.datatable-remove-btn';
         let selectNode = $(selectSelector);
@@ -165,9 +181,17 @@ class DataTable {
         // we need to register an handler here because bootstrap don't do it using 'live' ... a bit hackish but works
         $('[data-toggle="collapse"]').click(function(e){
             e.preventDefault();
-            var target_element= $(this).attr("href").replace(/\./g, '\\\.');
-            $('.collapse').collapse('hide');
-            $(target_element).collapse('toggle');
+            var target_element = $(this).attr("href").replace(/\./g, '\\\.');
+            let showed = $('.collapse-show');
+
+            showed.hide()
+            let target = $(target_element);
+            if (!target.hasClass('collapse-show')) {
+                target.show().addClass('collapse-show');
+            }
+            showed.removeClass('collapse-show');
+
+
             return false;
         });
 
@@ -184,21 +208,19 @@ class DataTable {
         if (Object.keys(additionalData).length === 0) return '';
         let html = '';
 
-        html += '<div class="panel">'; // parent class needed
-        html += '<div class="collapse" id="' + panelSelector + '">';
-        html += '   <div class="row datatable-additionaldata-panel" >';
+        html += '<tr class="panel">'; // parent class needed
+        html += '  <td  colspan="42" class="collapse" id="' + panelSelector + '">';
+        html += '    <div class="row datatable-additionaldata-panel" >';
 
         let keys = Object.keys(additionalData);
         for (let i=0;i<keys.length;i++){
             let key = keys[i];
             let value = additionalData[key];
-            html += '<div class="col-sm-1">';
-            html += '</div>';
-            html += '<div class="col-sm-3 datatable-additionnaldata-key">';
-            html += '   ' + key;
-            html += '</div>';
+            html += '<div class="col-sm-1"></div>';
+            html += '<div class="col-sm-3 datatable-additionnaldata-key">' + key + '</div>';
             html += '<div class="col-sm-8 datatable-additionnaldata-value">';
-            if (key === 'logs' && value.hasOwnProperty('length')){
+
+            if ((key === 'logs') && value.hasOwnProperty('length')){
                 html += '<div class="datatable-additionnaldata-logs">';
                 for (let j=0;j<value.length;j++) {
                     html += '   ' + value[j] + '<br/>';
@@ -207,33 +229,32 @@ class DataTable {
             } else {
                 html += '   ' + value;
             }
+
             html += '</div>';
             // break;
         }
-
         html += '   </div>';
-        html += '</div>';
-        html += '</div>';
-
+        html += '  </td>';
+        html += '</tr>';
         return html;
     }
     _onRemoveBtnClick(e) {
-        let hostname = $(e.target).parent('div').parent('div').parent('div').parent('div').data('hostobj').hostname;
+        let hostname = $(e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode).data('hostobj').hostname;
         this.onRemove(hostname);
     }
 
     _sortBtnClick(e){
-        let selectedCol = $(e.target).parent('div').data('columnname');
+        let selectedCol = $(e.target.parentNode).data('columnname');
         console.log('col : ' + selectedCol);
         this._sort(selectedCol);
     }
 
     _onAddTesterClick(e){
-        let hostname = $(e.target).parent('div').parent('div').parent('div').parent('div').data('hostobj').hostname;
+        let hostname = $(e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode).data('hostobj').hostname;
         this.onAddTesterClick(hostname);
     }
     _onRemoveTesterClick(e){
-        let hostname = $(e.target).parent('div').parent('div').parent('div').parent('div').data('hostobj').hostname;
+        let hostname = $(e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode).data('hostobj').hostname;
         this.onRemoveTesterClick(hostname);
     }
 
