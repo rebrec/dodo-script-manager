@@ -39,7 +39,7 @@ Function Get-Username {
 
 Function Get-IpAddresses{
     Try {
-        $addresses = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = True' | Select -ExpandProperty IPAddress
+        $addresses = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = True' | Select -ExpandProperty IPAddress | ?{$_ -match "192\.168"} | sort | select -first 1
         return $addresses
     }
     Catch {
