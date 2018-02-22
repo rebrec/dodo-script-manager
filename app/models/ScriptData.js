@@ -13,7 +13,6 @@ module.exports = function (db) {
         }
 
         recordExecution(hostname, additionnalData, executed = true) {
-            // let recordTimestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5);
             let now = new Date();
             let recordTimestamp = moment(now).format("YYYY-MM-DD HH:mm:ss");
             return this.updateLastCheckTimestamp(hostname)
@@ -43,7 +42,8 @@ module.exports = function (db) {
         }
 
         updateLastCheckTimestamp(hostname) {
-            let timestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5);
+            let now = new Date();
+            let timestamp = moment(now).format("YYYY-MM-DD HH:mm:ss");
             return this.collection.findAsync({
                 scriptname: this.scriptname,
                 scriptversion: this.scriptversion,
