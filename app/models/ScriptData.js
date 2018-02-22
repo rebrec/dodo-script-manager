@@ -23,6 +23,7 @@ module.exports = function (db) {
                     if (doc.hasOwnProperty('executed') && JSON.parse(doc.executed) === true && JSON.parse(executed) === false){
                         // we will add additionnalData but will keep existing logs
                         additionnalData.logs = doc.additionnalData.logs;
+                        recordTimestamp = doc.recordTimestamp;
                         executed = 'true';
                     }
                     doc.recordTimestamp = recordTimestamp;
