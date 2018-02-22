@@ -96,7 +96,7 @@ Function isAlreadyExecuted {
         return $res
     }
     Catch {
-        return $false
+        return $true
     }
 }
 Function Update-EnvironmentData {
