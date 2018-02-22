@@ -109,8 +109,8 @@ module.exports = function (db) {
             scriptSettings.getScriptSettings()
                 .then(data => {
                     result.status = 'success';
-                    data.scriptName = scriptName;
-                    data.scriptVersion = scriptVersion;
+                    // data.scriptName = scriptName;
+                    // data.scriptVersion = scriptVersion;
                     result.data = data;
                     return res.json(result);
                 })

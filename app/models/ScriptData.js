@@ -1,6 +1,7 @@
 module.exports = function (db) {
 
     const Promise = require('bluebird');
+    const moment = require('moment');
 
 
     class ScriptData {
@@ -12,7 +13,9 @@ module.exports = function (db) {
         }
 
         recordExecution(hostname, additionnalData, executed = true) {
-            let recordTimestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5);
+            // let recordTimestamp = (new Date()).toISOString().replace('T', ' ').slice(0, -5);
+            let now = new Date();
+            let recordTimestamp = moment(now).format("YYYY-MM-DD HH:mm:ss");
             return this.updateLastCheckTimestamp(hostname)
                 .then(_ => {
                     return this.collection.findOneAsync({scriptname: this.scriptname, scriptversion: this.scriptversion, hostname: hostname})
