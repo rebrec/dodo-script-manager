@@ -104,12 +104,12 @@ class DataTable {
         html += '        Executed : ' + executed.length;
         html += '    </h2></div>';
         html += '    <div class="col-sm-3"><h2>';
-        html += '        Total Count : ' + this._datasourceCache.length;
-        html += '    </h2></div>';
-        html += '    <div class="col-sm-3"><h2>';
-        html += '        Testers Count : ' + this._scriptSettings.testers.length
+        html += '        Testers : ' + this._scriptSettings.testers.length
         html += '    </h2></div>';
         html += '    </div>';
+        html += '    <div class="col-sm-3"><h2>';
+        html += '        Total : ' + this._datasourceCache.length;
+        html += '    </h2></div>';
         html += '    <div class="col-sm-2">';
         html += '    </div>';
         html += '    <div class="col-sm-1">';
