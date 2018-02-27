@@ -100,13 +100,17 @@ class DataTable {
         let html = '';
 
         html += '<div class="row">';
-        html += '    <div class="col-sm-4"><h2>';
+        html += '    <div class="col-sm-3"><h2>';
         html += '        Executed : ' + executed.length;
         html += '    </h2></div>';
-        html += '    <div class="col-sm-4"><h2>';
+        html += '    <div class="col-sm-3"><h2>';
         html += '        Total Count : ' + this._datasourceCache.length;
         html += '    </h2></div>';
-        html += '    <div class="col-sm-3">';
+        html += '    <div class="col-sm-3"><h2>';
+        html += '        Testers Count : ' + this._scriptSettings.testers.length
+        html += '    </h2></div>';
+        html += '    </div>';
+        html += '    <div class="col-sm-2">';
         html += '    </div>';
         html += '    <div class="col-sm-1">';
         html += '        <span style="font-size:1.5rem" class="fa fa-refresh datable-refresh-btn right"></span>';
