@@ -106,7 +106,6 @@ class DataTable {
         html += '    <div class="col-sm-3"><h2>';
         html += '        Testers : ' + this._scriptSettings.testers.length
         html += '    </h2></div>';
-        html += '    </div>';
         html += '    <div class="col-sm-3"><h2>';
         html += '        Total : ' + this._datasourceCache.length;
         html += '    </h2></div>';
