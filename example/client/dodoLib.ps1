@@ -156,5 +156,16 @@ if ($PSVersionTable.PSVersion -eq "2.0") {
         }
        
     }    
+
+    Function Get-Username {
+        Try { # mainly used to get real user logged on when running the script as SYSTEM
+            $user = (Get-WmiObject Win32_Process | ? {$_.ProcessName -like 'explorer.exe' } | select -first 1).getOwner().User
+            return $user
+        }
+        Catch {
+            return $env:USERNAME
+        }
+    }
+
 }
 
