@@ -52,7 +52,8 @@ Function Get-LastBootTime {
     if ($os.LastBootUpTime) {
        $uptime = (Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime)
        #return $os.ConvertToDateTime($os.LastBootUpTime)
-       return "" + $uptime.Days + "d" + $uptime.Hours + "h" + $uptime.Minutes + "m" 
+       = "{0:00}" -f 15
+       return "{0:00}D{1:00}H{2:00}M" -f $uptime.Days, $uptime.Hours, $uptime.Minutes
     } else { return "N/A" }
 
 }
