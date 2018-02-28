@@ -1,4 +1,5 @@
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
+$scriptPath = "\\sdis72.fr\Netlogon\Public\scripts\powershell"
 Import-Module "$scriptPath\dodoLib.ps1"
 
 $global:DODO_BASE_URL          = "http://$DODO_HOSTNAME" + ":" + "$DODO_PORT/api/script"
@@ -23,7 +24,7 @@ Function Get-DodoScripts {
     }
 }
 
-Function Get-DodoScriptsVersions {
+Function Get-DodoScriptVersions {
     [cmdletbinding()]
     Param (
         [parameter(ValueFromPipeline)]
@@ -125,7 +126,7 @@ Function Remove-DodoTester {
 
     Try {
         $url = "$DODO_BASE_URL/settings/$scriptname/$scriptversion/$uid"
-        Write-Host "Sending PUT Request $url"
+        Write-Host "Sending DELETE Request $url"
 
         $data = ConvertTo-Json @()
 
@@ -142,6 +143,57 @@ Function Remove-DodoTester {
         return $false
     }
 }
+
+
+Function Remove-DodoHost {
+    [cmdletbinding()]
+    Param (
+        $scriptname,
+        $scriptversion,
+        $uid
+    )
+
+    Try {
+        $url = "$DODO_BASE_URL/$scriptname/$scriptversion/$uid"
+        Write-Host "Sending DELETE Request $url"
+
+        $data = ConvertTo-Json @()
+
+        $state = Invoke-RestMethod -Method Delete -Uri $url -ContentType 'application/json' -Body $data
+    
+        if ($state.status -ne 'success'){ 
+            throw "Error reaching url $url $(ConvertTo-JSON $state)"
+        }
+        $res = $state
+
+        return $res
+    }
+    Catch {
+        return $false
+    }
+}
+
+
+Function Remove-DodoScriptname {
+    [cmdletbinding()]
+    Param (
+        $scriptname
+    )
+    Get-DodoScriptVersions -scriptname $scriptname | % { 
+        Remove-DodoScriptVersion -scriptname $scriptname -scriptversion $_ 
+    }
+}
+
+Function Remove-DodoScriptVersion {
+    [cmdletbinding()]
+    Param (
+        $scriptname,
+        $scriptversion
+    )
+    Write-Host "Removing Scriptname : $scriptname, version $scriptversion"
+    Get-DodoHosts -scriptname $scriptname -scriptversion $scriptversion | % { Remove-DodoHost -scriptname $scriptname -scriptversion $scriptversion -uid $_.hostname }
+}
+
 
 Function Get-DodoScriptSettings {
     [cmdletbinding()]
