@@ -26,28 +26,13 @@ $global:DODO_SCRIPT_VERSION    = "SOME_VERSION"
 ## }
 ###################################################################################################
 Function Main{
-    param()
     # Your code goes here
-	$previousInstalledPrinters = (Get-WmiObject -query "Select * From Win32_Printer" | Select -ExpandProperty Name)
-	logDodo "[+] Imprimantes installees avant migration :"
-	logDodo $previousInstalledPrinters
 	
-	$res = . "$scriptPath\start.cmd"
-	logDodo "[+] Résultat de l'exécution de $scriptPath\start.cmd : "
-	logDodo $res 
-	
-	$newlyInstalledPrinters = (Get-WmiObject -query "Select * From Win32_Printer" | Select -ExpandProperty Name)
-	logDodo "[+] Imprimantes installees apres migration :"
-	logDodo $newlyInstalledPrinters
-	
-	$oldPrinterStillPresent = ($newlyInstalledPrinters | % { $_ -ilike '*imp02*'}) -contains $true
-	if ($oldPrinterStillPresent) {
-		logDodo "[ /!\ ] Erreur : des imprimantes pointent encore vers srv-imp02"
-		return $false
+	# DON'T FORGET TO CHANGE BELOW !
+	if ($someCheck -eq $true) {
+		return $true # persist on Dodo Server Success of the script execution
 	} else {
-		logDodo "[  V  ] Toutes les imprimantes ont été migrées"
-		return $true
+		return $false # persist on Dodo Server the failure of the script execution
 	}
-	# We save the execution status so that we do not execute it twice
     
 }
