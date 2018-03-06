@@ -14,7 +14,13 @@ $global:DODO_SCRIPT_VERSION    = "Scriptversion-not-defined"
 Function global:Get-UniqueExecutionId {  
     return "$env:COMPUTERNAME"
 }
-#lastBootTime       = Get-LastBootTime
+
+# override this function if you want to add specific conditions before allowing execution (timerange, specific date, etc)
+Function global:isDodoExecutionContextCorrect {
+	Write-host "isDodoExecutionContextCorrect called !!!"
+	return $true # return $true to allow execution
+}
+
 Function global:Get-AdditionnalData{
     return @{
             username           = "$(Get-Username)"
@@ -52,7 +58,6 @@ Function Get-LastBootTime {
     if ($os.LastBootUpTime) {
        $uptime = (Get-Date) - $os.ConvertToDateTime($os.LastBootUpTime)
        #return $os.ConvertToDateTime($os.LastBootUpTime)
-       = "{0:00}" -f 15
        return "{0:00}D{1:00}H{2:00}M" -f $uptime.Days, $uptime.Hours, $uptime.Minutes
     } else { return "N/A" }
 
@@ -77,7 +82,7 @@ Function isAlreadyExecuted {
     param()
     Try {
         $url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
-        Write-Host "Seding GET Request $url"
+        Write-Host "Sending GET Request $url"
         $request = [System.Net.HttpWebRequest]::Create($url)
         $request.Method = "GET"
         #$request.ContentType = "application/json"
@@ -109,8 +114,10 @@ Function Save-ExecutionStatus {
 	$additionalData = Get-AdditionnalData
 	$additionalData.executed = $executed
     $additionnalJSONData = ConvertTo-Json $additionalData
-
-    $state = Invoke-RestMethod -Method Put -Uri "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)" -ContentType 'application/json' -Body $additionnalJSONData
+	$url = "$DODO_BASE_URL/$DODO_SCRIPT_NAME/$DODO_SCRIPT_VERSION/$(Get-UniqueExecutionId)"
+	Write-Host "Sending Put Request $url"
+	Write-Host "AdditionnalData $additionnalJSONData"
+    $state = Invoke-RestMethod -Method Put -Uri $url -ContentType 'application/json' -Body $additionnalJSONData
     if ($state.status -ne 'success'){ 
         Write-Host "Error calling isAlreadyExecuted, returned non successfull value"
         # Check wether the Log function is defined :

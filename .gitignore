@@ -29,4 +29,7 @@ nbproject
 /getProductionData.sh
 /test/db*
 /db*
+
+/powershell/script_root/scripts/
+
 deploy.sh
