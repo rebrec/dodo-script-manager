@@ -31,5 +31,5 @@ nbproject
 /db*
 
 /powershell/script_root/scripts/
-
+/powershell/script_root/config.ps1
 deploy.sh
