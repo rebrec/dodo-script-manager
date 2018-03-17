@@ -43,8 +43,8 @@ to order their execution the way you want.
 As said before, every Powershell script managed by *Dodo Launcher* must start with either *"computermode"* or *"usermode"*.
 *Dodo Launcher* will behave differently while executing scripts depending of their prefix :
 
-- Scripts starting with *"computermode"* will be executed as System (the current user context since you must run *Dodo Launcher* as SYSTEM)
-- Scripts starting with *"usermode"* will be executed in the current logged in user context (the user owning explorer.exe in the active session).
+- Scripts starting with **"computermode"** will be executed as **SYSTEM** (the current user context since you must run *Dodo Launcher* as **SYSTEM**)
+- Scripts starting with **"usermode"** will be executed in the **Current Logged In User context** (the user owning *explorer.exe* in the active session).
 
 That way, you will be able either to run scripts able to change system settings for instance, but also other which interact with the current user
 profile, or even interact with the interactive session.
