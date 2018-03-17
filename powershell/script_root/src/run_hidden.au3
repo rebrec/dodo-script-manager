@@ -7,5 +7,5 @@ For $i = 1 To $CmdLine[0]
     $params = $params & " " & $CmdLine[$i]
 Next
 
-Run(@ComSpec & " /c " & $params, "", @SW_HIDE)
+RunWait(@ComSpec & " /c " & $params, "", @SW_HIDE)
 
