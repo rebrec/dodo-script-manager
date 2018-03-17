@@ -56,8 +56,10 @@ That way, for instance, you will be able to :
 
 Every powershell script (computer or user mode) must start with :
 
+```powershell
   $global:DODO_SCRIPT_NAME       = "Some_Scriptname"
   $global:DODO_SCRIPT_VERSION    = "1.0"
+```
 
 Thoses 2 informations will be uploaded to **Dodo Server** and will allow the administrator (you) to allow or
 not the execution of this specific script on a specific computer for instance based on the scriptname and the script version.
