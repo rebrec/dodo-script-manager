@@ -46,8 +46,9 @@ As said before, every Powershell script managed by *Dodo Launcher* must start wi
 - Scripts starting with **"computermode"** will be executed as **SYSTEM** (the current user context since you must run *Dodo Launcher* as **SYSTEM**)
 - Scripts starting with **"usermode"** will be executed in the **Current Logged In User context** (the user owning *explorer.exe* in the active session).
 
-That way, you will be able either to run scripts able to change system settings for instance, but also other which interact with the current user
-profile, or even interact with the interactive session.
+That way, for instance, you will be able to :
+- Run a script that install an application system wide
+- Run a script which interact with the current user profile, and even interact with the interactive session.
 
 #### Script structure
 
