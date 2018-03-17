@@ -66,7 +66,7 @@ Thoses 2 informations will be uploaded to **Dodo Server** and will allow the adm
 script on a specific computer or for a specific user (by adding thoses computers
 or users to the script's "tester" list).
 
-Please note that thoses 2 variables are just strings, so the version number could be anything and not only numerical value.
+Please note that thoses 2 variables are just strings, so the version number could be anything and not only numerical values.
 
 ##### Script Body
 
