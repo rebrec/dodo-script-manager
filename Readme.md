@@ -153,23 +153,27 @@ been good enough and are currently running your script to only a bunch of users 
 (and when everything will works as expected, you will add a few other "testers" and
 then, push the Script to your whole company).
 
-All thoses situations lead to quite a lot of effort for yourself, you will have
-sometimes the need to gather environmental informations (powershell version,
-uptime, etc) on a specific computer where things doesn't work as expected,
+All thoses situations lead to quite a lot of effort for yourself :
+- you have sometimes the need to gather environmental informations (powershell version,
+uptime, etc) on a specific computer where things doesn't work as expected
+- you need to choose tester that are powered on, on a specific ip subnet maybe
+- after running "blindly" the script silently, you will have to connect to the tester computer
+to check some logs that your script generate (each script may not use the same logging scheme maybe...)
 
-It is also interesting to know where the script has been executed and if it was executed properly.
+It is also interesting to know where the script has been executed and if it was
+executed properly from a central place.
 
 ### Solutions that Dodo solve
 
 With the help of Dodo, you will now be able to :
 - Quickly execute a just crafted script : first, dodoLauncher won't execute it since every
   dodo script are in beta mode when created, then, you will choose the right computer, or user,
-  maybe you will want some computer that has just communicate with Dodo Server so that you can
+  maybe you will want some computer that has just communicated with Dodo Server so that you can
   do some testing "live". Then you will click on each desired host to add them as "tester".
   That way, next time dodoLauncher will run, it will execute your script. You will instantly
   retrieve the execution log and will know, wether the execution was successful or not. If something
   is not working as expected, you will be able to read host environmental data and will perhaps quickly
-  discover that every computer whose Powershell version is less than 3 doesn't execute the script properly.
+  discover that every computer whose Powershell version is less than v3 doesn't execute the script properly.
 - Access to host environmental informations uptime, ip address, current user, whatever else you need
   (this can be extended for each script easily)
 - Switch the script to production when you have validated on enough testers that the script
