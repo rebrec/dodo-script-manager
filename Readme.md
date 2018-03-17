@@ -6,19 +6,22 @@ Dodo is based on 2 components :
 
 ### Dodo Launcher (the client) :
 
-It's a powershell script (powershell v2 minimum). It should be run as SYSTEM Account on every computer you manage
-(the recommanded way would be as a scheduled task at a specific interval like 15 minutes).
+It's a Powershell script (Powershell v2 minimum) that must be run as **SYSTEM**
+on every computer you manage (the recommended way is to run it periodically as a
+scheduled task at a specific interval like 15 minutes).
 
 It will run every script located within `$DODO_BASE_DIR` :
 
-`$DODO_BASE_DIR` is a the root folder which will contain every powershell script that can be managed using *Dodo Launcher*.
+`$DODO_BASE_DIR` is the root folder which will contain every Powershell script that can be managed using *Dodo Launcher*.
 
-For a powershell script to be managed by *Dodo Launcher*, it need 2 conditions :
+For a Powershell script to be managed by *Dodo Launcher*, it need 2 conditions :
 
-- its name must start with either *"computermode"* or *"usermode"*
-- it must not be within a subfolder whose name is *"disabled"*
+- Its name must start with either **"computermode"** or **"usermode"**
+- It must not be within a subfolder whose name is **"disabled"**
 
 The default folder structure of `$DODO_BASE_DIR` is :
+
+```
   DODO_BASE_DIR
     + 01
       - computermode-some_script_that_will_be_run_first.ps1
@@ -30,13 +33,14 @@ The default folder structure of `$DODO_BASE_DIR` is :
     + 05
     + disabled
       - usermode-a_script_that_wont_run_because_of_being_within_the_disabled_folder.ps1
+```
 
 It is designed so that scripts will be executed in alphabetical order (so you can put scripts in different subfolders)
 to order their execution the way you want.
 
 #### Script Naming convention : computermode vs usermode
 
-As said before, every powershell script manages by *Dodo Launcher* must start with either *"computermode"* or *"usermode"*.
+As said before, every Powershell script managed by *Dodo Launcher* must start with either *"computermode"* or *"usermode"*.
 *Dodo Launcher* will behave differently while executing scripts depending of their prefix :
 
 - Scripts starting with *"computermode"* will be executed as System (the current user context since you must run *Dodo Launcher* as SYSTEM)
@@ -87,7 +91,7 @@ Function Main{
 	logDodo "usefull information about the script execution (either the execution is"
 	logDodo "successfull or not."
 	$someCheck = $true
-    # We save the execution status so that we do not execute it twice
+  # We save the execution status so that we do not execute it twice
 	If ($someCheck -eq $true){
 		return $true  # Execution is correct (Dodo Server will mark this script as being
                   # executed successfully so it won't execute again
@@ -171,4 +175,3 @@ With the help of Dodo, you will now be able to :
 ## Contribute
 
 ## Donate
-  
