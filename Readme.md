@@ -70,6 +70,9 @@ Please note that thoses 2 variables are just strings, so the version number coul
 
 ##### Script Body
 
+After the declaration of the 2 variables identifying the script name and version,
+a typical script will look like this :
+
 ```powershell
 # If needed, uncomment this function to be able to track script execution
 # According to something different than just the computername
