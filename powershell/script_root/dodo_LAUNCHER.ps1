@@ -1,3 +1,16 @@
+param (
+	[switch] $Help,
+	[switch] $UsermodeOnly,
+	[switch] $ComputermodeOnly,
+	[string] $SpecificScript,
+	[string] $DODO_LIB_PATH,
+	[string] $DODO_BASE_DIR,
+	[string] $DODO_SCRIPT_DIR,
+	[string] $DODO_TEMPLATE_DIR,
+	[string] $DODO_BIN_DIR,
+	[switch] $Debug
+)
+
 # This script will run every PS1 scripts within $DODO_BASE_DIR
 # For being executed, scripts filenames must start with either 'computermode' 
 # or 'usermode'
@@ -6,32 +19,140 @@
 # This script is supposed to be run as SYSTEM account. When named as 'usermode'
 # The current user will be extracted from the owner of the explorer.exe process
 # Then this user will be impersonated to run the script within the user environment
+$date = Get-Date; 
+$scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
+$configFile = "$scriptPath\config.ps1"
+if ($(Test-Path $configFile) -ne $true) {
+    Write-Warning "#####################################################################"
+    Write-Warning "# Missing Config.ps1 file !"
+    Write-Warning "# Please start by copying the one available in the 'example' folder"
+    Write-Warning "#####################################################################"
+    throw "Missing $configFile" 
+}
+Import-Module $configFile
 
-$DODO_BASE_DIR   = "\\sdis72.fr\NETLOGON\Public\DODO"
-# $DODO_BIN_DIR 	 = "$DODO_BASE_DIR\bin"
-$DODO_BIN_DIR 	 = "c:\Windows" # Files must be copied there... could be automated
-$DODO_SCRIPT_DIR = "$DODO_BASE_DIR\scripts"
-$DODO_LIB_PATH   = "\\sdis72.fr\NETLOGON\Public\scripts\powershell\dodoLib.ps1"
+$timestamp = "{0:0000}{1:00}{2:00}{3:00}{4:00}{5:00}" -f $date.Year, $date.Month, $date.Day, $date.Hour, $date.Minute,$date.Second,$date.Millisecond
+$DODO_LOG_DIR = New-Item -ItemType Directory -Force -Path "$($env:TEMP)\DODO"
+
+$DODO_LOG_FILE = "$DODO_LOG_DIR\$timestamp-Launcher.log"
+
+if ($DODO_BASE_DIR      -eq "") { $DODO_BASE_DIR       = $DEFAULT_DODO_BASE_DIR }
+if ($DODO_BIN_DIR       -eq "") { $DODO_BIN_DIR        = "$DODO_BASE_DIR\bin" }
+if ($DODO_SCRIPT_DIR    -eq "") { $DODO_SCRIPT_DIR     = "$DODO_BASE_DIR\scripts" }
+if ($DODO_TEMPLATE_DIR  -eq "") { $DODO_TEMPLATE_DIR   = "$DODO_BASE_DIR\templates" }
+if ($DODO_LIB_PATH      -eq "") { $DODO_LIB_PATH       = $DEFAULT_DODO_LIB_PATH }
+if ($SpecificScript     -eq "") { $SpecificScript      = $DEFAULT_SpecificScript }
+
+if ($DEFAULT_DODO_BIN_DIR     ) { $DODO_BIN_DIR        = $DEFAULT_DODO_BIN_DIR }
+if ($DEFAULT_DODO_SCRIPT_DIR  ) { $DODO_SCRIPT_DIR     = $DEFAULT_DODO_SCRIPT_DIR }
+if ($DEFAULT_DODO_TEMPLATE_DIR) { $DODO_TEMPLATE_DIR   = $DEFAULT_DODO_TEMPLATE_DIR }
+
+if ($PSBoundParameters.ContainsKey("Debug") -ne $true){
+    $Debug = $DEFAULT_DODO_Debug
+}
+
 $RUN_HIDDEN                    = "$DODO_BIN_DIR\run_hidden.exe"
 
-if ((gwmi win32_operatingsystem | select osarchitecture).osarchitecture -imatch '64') { 
-    $RUNFROMPROCESS                = "$DODO_BIN_DIR\RunFromProcess-x64.exe"
-} else { 
-    $RUNFROMPROCESS                = "$DODO_BIN_DIR\RunFromProcess.exe"
+Function Log-Message{
+    param(
+        [ValidateNotNullOrEmpty()]
+        $message
+    )
+    Write-Output $message  | % { Write-Host $_; Out-File -FilePath $DODO_LOG_FILE -Append -InputObject $_ }       
+}
+
+Function Start-ProcessAndLog{
+    param(
+        [ValidateNotNullOrEmpty()][string] $logName,
+        [ValidateNotNullOrEmpty()][string] $FilePath,
+        [switch] $runAsCurrentUser,
+        $ArgumentList
+    )
+    Log-Message " "
+    Log-Message " "
+    Log-Message "Starting $cmd $ArgumentList"
+    if ($runAsCurrentUser) {
+       	$outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
+        $commandline = "$RUN_HIDDEN cmd.exe /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
+        # working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
+        ## the below line would have been perfect but it seems there is a string length limitation that is reached
+        # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
+        Log-Message "Usermode : running $commandline"
+        Start-ProcessAsCurrentUser -wait  -commandline $commandline
+        Log-Message " "
+        Log-Message "## OUTPUT and ERROR START : $outputFile"
+        $content = $(Get-Content -encoding OEM $outputFile)
+        if (-not $content) { 
+            $content = "No output" 
+        }
+        Log-Message $content
+        Log-Message "## OUTPUT and ERROR END"
+        
+    } else {
+        $errorFile     = "$DODO_LOG_DIR\$timestamp-$logName-err.log"
+   	    $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-out.log"
+	    Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -wait -RedirectStandardError $errorFile -RedirectStandardOutput $outputFile
+        Log-Message " "
+        Log-Message "## OUTPUT START : $outputFile"
+        $content = $(Get-Content -encoding OEM $outputFile)
+        if (-not $content) { 
+            $content = "No output" 
+        }
+        Log-Message $content
+        Log-Message "## OUTPUT END"
+        Log-Message " "
+        Log-Message "## ERROR START : $errorFile"
+        $content = $(Get-Content -encoding OEM $errorFile)
+        if (-not $content) { 
+            $content = "No output" 
+        }
+        Log-Message $content
+        Log-Message "## ERROR END"
+        Log-Message " "
+
+    }
+	    
 }
 
 Function Main{
+	Log-Message "Generation of Logfile $DODO_LOG_FILE"
+	Log-Message "###########################################################"
+	Log-Message "Environment variables : "
+	Log-Message " - DODO_BASE_DIR     = $DODO_BASE_DIR"
+	Log-Message " - DODO_BIN_DIR      = $DODO_BIN_DIR"
+	Log-Message " - DODO_SCRIPT_DIR   = $DODO_SCRIPT_DIR"
+	Log-Message " - DODO_TEMPLATE_DIR = $DODO_TEMPLATE_DIR"
+	Log-Message " - DODO_LOG_DIR      = $DODO_LOG_DIR"
+	Log-Message " - DODO_LIB_PATH     = $DODO_LIB_PATH"
+	Log-Message " - UsermodeOnly      = $UsermodeOnly"
+	Log-Message " - ComputermodeOnly  = $ComputermodeOnly"
+	Log-Message " - SpecificScript    = $SpecificScript"
+	Log-Message " - Debug             = $Debug"
+	Log-Message "###########################################################"
+	Log-Message "- Granting access to 'everyone' to the file"
+	$cmd = 'icacls.exe'
+	
+    $parameters = "$DODO_LOG_DIR" + '  /grant "Tout le monde:(OI)(CI)F" /T'
+	Start-ProcessAndLog -logName "icacls" -FilePath $cmd -ArgumentList $parameters 
+	
 	$scripts 		= Get-ChildItem -Path "$DODO_SCRIPT_DIR\" -Filter "*.ps1"     -Recurse | ? { $_.FullName -notmatch 'disabled' }
+	if ($SpecificScript) { 
+		$scripts 		= Get-ChildItem -Path $SpecificScript -Recurse | ? { $_.FullName -notmatch 'disabled' }
+	}
+	else {
+		$scripts 		= Get-ChildItem -Path "$DODO_SCRIPT_DIR\" -Filter "*.ps1"     -Recurse | ? { $_.FullName -notmatch 'disabled' }
+	}
 	$scripts | % {
 		$file = $_
 		if ($file.Name -imatch '^usermode-.*'){
-			Run-DodoScript -Usermode $_.FullName
+			if ($ComputermodeOnly -ne $true) { Run-DodoScript -Usermode $_ -Debug:$Debug }
 		} elseif ($file.Name -imatch '^computermode-.*'){
-			Run-DodoScript $_.FullName #-debug
+			if ($UsermodeOnly -ne $true) { Run-DodoScript $_ -Debug:$Debug }
 		} else {
-			Write-Host "Skipping malformed scriptname $($file.Name)"
+			Log-Message "Skipping malformed scriptname $($file.Name)"
 		}
 	}
+    if ($Debug) { start $DODO_LOG_FILE }
 }
 
 Function Get-DodoEncodedLauncher{
@@ -40,51 +161,377 @@ Function Get-DodoEncodedLauncher{
         [string] $scriptFullPath,
         [switch] $Debug
     )
-	$command =  '';
-	$command += 'Import-Module "' + $DODO_LIB_PATH + '";' + "`r`n"
-	$command += ". '" + $scriptFullPath +"';" + "`r`n"
-	$command += 'Write-Host "Running Script $DODO_SCRIPT_NAME (v $DODO_SCRIPT_VERSION)";' + "`r`n"
-	$command += 'Update-EnvironmentData;' + "`r`n"
-	$command += 'if ("$(isDodoExecutionContextCorrect)" -eq "$false") {' + "`r`n"
-	$command += '    Write-Host "Conditions are not met, so, we will exit now.";' + "`r`n"
-	$command += '    return' + "`r`n"
-	$command += '};' + "`r`n"
-	$command += 'if ($(isAlreadyExecuted) -ne $true){' + "`r`n"
-	$command += '    $executionResult = (Main);' + "`r`n"
-	$command += '    Write-Host "Execution Result: $executionResult";' + "`r`n"
-	$command += '    if ($executionResult -ne $true) { $executionResult = $false }' + "`r`n"
-	$command += '    Write-Host "Execution Result: $executionResult";' + "`r`n"
-	$command += '    Save-ExecutionStatus $executionResult' + "`r`n"
-	$command += '};' + "`r`n"
-	if ($debug) { Write-Host "Generating base64 string from : `r`n $command" }
+    $variables = New-Object -TypeName PSCustomObject
+    Add-Member -InputObject $variables -MemberType NoteProperty -Name "DODO_LIB_PATH"     -Value $DODO_LIB_PATH
+    Add-Member -InputObject $variables -MemberType NoteProperty -Name "DODO_LOG_FILE"     -Value $DODO_LOG_FILE
+    Add-Member -InputObject $variables -MemberType NoteProperty -Name "scriptFullPath"    -Value $scriptFullPath
+    Write-Host "Variables are :"
+    Write-Host $variables
+	$command = $(Get-ScriptFromTemplate -variables $variables)
+
+	if ($debug) { Log-Message "[Get-DodoEncodedLauncher] Generating base64 string from : `r`n$command" }
 	$b64command = [System.Convert]::ToBase64String([System.Text.Encoding]::UNICODE.GetBytes($command))	
 	return $b64command
 }
 
+Function Get-ScriptFromTemplate{
+    param(
+        [ValidateNotNullOrEmpty()] $variables,
+        [string] $template="default"
+    )
+    $templateFullPath = "$DODO_TEMPLATE_DIR\\$template.ps1"
+    $templateContent = Get-Content -raw $templateFullPath
+    $variables.PsObject.Properties | % {
+        $templateContent = $templateContent -replace "@@$($_.Name)", $_.Value
+    }
+    if ($Debug) {
+        $scriptFilename = $(gci $($variables.scriptFullPath)).Name
+        $scriptFullPath = "$DODO_LOG_DIR\\$timestamp-generated-script-$scriptFilename"
+        Log-Message "Creating debug script : $scriptFullPath"
+        Write-Output $templateContent | Out-File -FilePath $scriptFullPath
+    }
+    $templateContent
+
+}
 Function Run-DodoScript{
 	param (
         [ValidateNotNullOrEmpty()]
-        [string] $scriptFullPath,
+        [System.IO.FileSystemInfo] $script,
         [switch] $Usermode,
         [switch] $Debug
     )
-	$b64command = (Get-DodoEncodedLauncher -Debug:$Debug -scriptFullPath $scriptFullPath)
-	if ($Usermode -eq $true) {
-		$cmd        = "$RUNFROMPROCESS"
-		$parameters = "nomsg explorer.exe $RUN_HIDDEN powershell.exe"
-	} else {
-		$cmd        = "powershell.exe"
-		$parameters = ""
-	}
-	if ($Debug -eq $true) {
-		$parameters += " -NoExit"
-	}
+	$b64command    = (Get-DodoEncodedLauncher -Debug:$Debug -scriptFullPath $($script.FullName))
+	$cmd        = "powershell.exe"
+    $parameters = ""
+	#if ($Debug -eq $true) {
+	#	$parameters += " -NoExit"
+	#}
 	$parameters += " -NonInteractive -ExecutionPolicy Unrestricted -EncodedCommand $b64command"
-	Write-Host "Going to launch $scriptFullPath (Usermode=$Usermode)"
-	if ($Debug -eq $true) {
-		Write-Host "Starting $cmd $parameters"
-	}
-	Start-Process -FilePath $cmd -ArgumentList $parameters -wait
+	Log-Message "[Run-DodoScript] Going to launch $($script.FullName) (Usermode=$Usermode)"
+	Start-ProcessAndLog -logName $script.Basename -FilePath $cmd -ArgumentList $parameters -runAsCurrentUser:$Usermode
+	
 }
 
-Main
+Function Show-Help {
+	$helpMsg = @"
+Dodo Launcher Script
+Available parameters :
+  -Help                 : Display this help message
+  -UsermodeOnly         : Execute only Usermode scripts
+  -ComputermodeOnly     : Execute only Computermode scripts
+  -SpecificScript       : Execute only the specified script
+  -Debug                : Enable Debug messages
+
+"@
+	Write-Host $helpMsg
+}
+
+
+
+
+
+#region function Start-ProcessAsCurrentUser param([string] $commandline,$workingDir, $wait) 
+
+
+# CODE START from https://www.chasewright.com/session0bypass/ 
+$Source = @'
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Security;
+
+namespace Session0
+{
+    /// 
+
+    /// Class that allows running applications with full admin rights. In
+    /// addition the application launched will bypass the Vista UAC prompt.
+    /// 
+
+    public class AppLaunch
+    {
+        #region Structures
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SECURITY_ATTRIBUTES
+        {
+            public int Length;
+            public IntPtr lpSecurityDescriptor;
+            public bool bInheritHandle;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STARTUPINFO
+        {
+            public int cb;
+            public String lpReserved;
+            public String lpDesktop;
+            public String lpTitle;
+            public uint dwX;
+            public uint dwY;
+            public uint dwXSize;
+            public uint dwYSize;
+            public uint dwXCountChars;
+            public uint dwYCountChars;
+            public uint dwFillAttribute;
+            public uint dwFlags;
+            public short wShowWindow;
+            public short cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PROCESS_INFORMATION
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public uint dwProcessId;
+            public uint dwThreadId;
+        }
+
+        #endregion
+
+        #region Enumerations
+
+        enum TOKEN_TYPE : int
+        {
+            TokenPrimary = 1,
+            TokenImpersonation = 2
+        }
+
+        enum SECURITY_IMPERSONATION_LEVEL : int
+        {
+            SecurityAnonymous = 0,
+            SecurityIdentification = 1,
+            SecurityImpersonation = 2,
+            SecurityDelegation = 3,
+        }
+
+        #endregion
+
+        #region Constants
+
+        public const int TOKEN_DUPLICATE = 0x0002;
+        public const uint MAXIMUM_ALLOWED = 0x2000000;
+        public const int CREATE_NEW_CONSOLE = 0x00000010;
+
+        public const int IDLE_PRIORITY_CLASS = 0x40;
+        public const int NORMAL_PRIORITY_CLASS = 0x20;
+        public const int HIGH_PRIORITY_CLASS = 0x80;
+        public const int REALTIME_PRIORITY_CLASS = 0x100;
+
+        #endregion
+
+        #region Win32 API Imports
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hSnapshot);
+
+        [DllImport("kernel32.dll")]
+        static extern uint WTSGetActiveConsoleSessionId();
+
+        [DllImport("advapi32.dll", EntryPoint = "CreateProcessAsUser", SetLastError = true, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+        public extern static bool CreateProcessAsUser(IntPtr hToken, String lpApplicationName, String lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes,
+            ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandle, int dwCreationFlags, IntPtr lpEnvironment,
+            String lpCurrentDirectory, ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
+
+        [DllImport("kernel32.dll")]
+        static extern bool ProcessIdToSessionId(uint dwProcessId, ref uint pSessionId);
+
+        [DllImport("advapi32.dll", EntryPoint = "DuplicateTokenEx")]
+        public extern static bool DuplicateTokenEx(IntPtr ExistingTokenHandle, uint dwDesiredAccess,
+            ref SECURITY_ATTRIBUTES lpThreadAttributes, int TokenType,
+            int ImpersonationLevel, ref IntPtr DuplicateTokenHandle);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
+
+        [DllImport("advapi32", SetLastError = true), SuppressUnmanagedCodeSecurity]
+        static extern bool OpenProcessToken(IntPtr ProcessHandle, int DesiredAccess, ref IntPtr TokenHandle);
+
+        #endregion
+
+        /// 
+
+        /// Launches the given application with full admin rights, and in addition bypasses the Vista UAC prompt
+        /// 
+
+        /// The name of the application to launch
+        /// Process information regarding the launched application that gets returned to the caller
+        /// 
+        public static bool Start(String applicationName, string startingDir, out PROCESS_INFORMATION procInfo)
+        {
+            uint winlogonPid = 0;
+            IntPtr hUserTokenDup = IntPtr.Zero, hPToken = IntPtr.Zero, hProcess = IntPtr.Zero;
+            procInfo = new PROCESS_INFORMATION();
+
+            // obtain the currently active session id; every logged on user in the system has a unique session id
+            uint dwSessionId = WTSGetActiveConsoleSessionId();
+
+            // obtain the process id of the winlogon process that is running within the currently active session
+            // -- chaged by ty 
+            // Process[] processes = Process.GetProcessesByName("winlogon");
+            Process[] processes = Process.GetProcessesByName("explorer");
+            foreach (Process p in processes)
+            {
+                if ((uint)p.SessionId == dwSessionId)
+                {
+                    winlogonPid = (uint)p.Id;
+                }
+            }
+
+            // obtain a handle to the winlogon process
+            hProcess = OpenProcess(MAXIMUM_ALLOWED, false, winlogonPid);
+
+            // obtain a handle to the access token of the winlogon process
+            if (!OpenProcessToken(hProcess, TOKEN_DUPLICATE, ref hPToken))
+            {
+                CloseHandle(hProcess);
+                return false;
+            }
+
+            // Security attibute structure used in DuplicateTokenEx and CreateProcessAsUser
+            // I would prefer to not have to use a security attribute variable and to just 
+            // simply pass null and inherit (by default) the security attributes
+            // of the existing token. However, in C# structures are value types and therefore
+            // cannot be assigned the null value.
+            SECURITY_ATTRIBUTES sa = new SECURITY_ATTRIBUTES();
+            sa.Length = Marshal.SizeOf(sa);
+
+            // copy the access token of the winlogon process; the newly created token will be a primary token
+            if (!DuplicateTokenEx(hPToken, MAXIMUM_ALLOWED, ref sa, (int)SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, (int)TOKEN_TYPE.TokenPrimary, ref hUserTokenDup))
+            {
+                CloseHandle(hProcess);
+                CloseHandle(hPToken);
+                return false;
+            }
+
+            // By default CreateProcessAsUser creates a process on a non-interactive window station, meaning
+            // the window station has a desktop that is invisible and the process is incapable of receiving
+            // user input. To remedy this we set the lpDesktop parameter to indicate we want to enable user 
+            // interaction with the new process.
+            STARTUPINFO si = new STARTUPINFO();
+            si.cb = (int)Marshal.SizeOf(si);
+            si.lpDesktop = @"winsta0\default"; // interactive window station parameter; basically this indicates that the process created can display a GUI on the desktop
+
+            // flags that specify the priority and creation method of the process
+            int dwCreationFlags = NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
+
+            // create a new process in the current user's logon session
+            bool result = CreateProcessAsUser(hUserTokenDup,        // client's access token
+                                            null,                   // file to execute
+                                            applicationName,        // command line
+                                            ref sa,                 // pointer to process SECURITY_ATTRIBUTES
+                                            ref sa,                 // pointer to thread SECURITY_ATTRIBUTES
+                                            false,                  // handles are not inheritable
+                                            dwCreationFlags,        // creation flags
+                                            IntPtr.Zero,            // pointer to new environment block 
+                                            startingDir,                   // name of current directory 
+                                            ref si,                 // pointer to STARTUPINFO structure
+                                            out procInfo            // receives information about new process
+                                            );
+
+            // invalidate the handles
+            CloseHandle(hProcess);
+            CloseHandle(hPToken);
+            CloseHandle(hUserTokenDup);
+			
+			
+            return result; // return the result
+        }
+
+    }
+}
+'@
+
+# CODE END from https://www.chasewright.com/session0bypass/ 
+
+# CODE START from https://github.com/PowerShellMafia/PowerSploit/
+function local:Get-ProcAddress {
+	Param (
+		[OutputType([IntPtr])]
+
+		[Parameter( Position = 0, Mandatory = $True )]
+		[String]
+		$Module,
+	
+		[Parameter( Position = 1, Mandatory = $True )]
+		[String]
+		$Procedure
+	)
+
+	# Get a reference to System.dll in the GAC
+	$SystemAssembly = [AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.GlobalAssemblyCache -And $_.Location.Split('\\')[-1].Equals('System.dll') }
+	$UnsafeNativeMethods = $SystemAssembly.GetType('Microsoft.Win32.UnsafeNativeMethods')
+	# Get a reference to the GetModuleHandle and GetProcAddress methods
+	$GetModuleHandle = $UnsafeNativeMethods.GetMethod('GetModuleHandle')
+	$GetProcAddress = $UnsafeNativeMethods.GetMethod('GetProcAddress')
+	# Get a handle to the module specified
+	$Kern32Handle = $GetModuleHandle.Invoke($null, @($Module))
+	$tmpPtr = New-Object IntPtr
+	$HandleRef = New-Object System.Runtime.InteropServices.HandleRef($tmpPtr, $Kern32Handle)
+
+	# Return the address of the function
+	$GetProcAddress.Invoke($null, @([Runtime.InteropServices.HandleRef]$HandleRef, $Procedure))
+}
+#Get-DelegateType from PowerSploit
+function Local:Get-DelegateType
+{
+	Param
+	(
+		[OutputType([Type])]
+		
+		[Parameter( Position = 0)]
+		[Type[]]
+		$Parameters = (New-Object Type[](0)),
+		
+		[Parameter( Position = 1 )]
+		[Type]
+		$ReturnType = [Void]
+	)
+
+	$Domain = [AppDomain]::CurrentDomain
+	$DynAssembly = New-Object System.Reflection.AssemblyName('ReflectedDelegate')
+	$AssemblyBuilder = $Domain.DefineDynamicAssembly($DynAssembly, [System.Reflection.Emit.AssemblyBuilderAccess]::Run)
+	$ModuleBuilder = $AssemblyBuilder.DefineDynamicModule('InMemoryModule', $false)
+	$TypeBuilder = $ModuleBuilder.DefineType('MyDelegateType', 'Class, Public, Sealed, AnsiClass, AutoClass', [System.MulticastDelegate])
+	$ConstructorBuilder = $TypeBuilder.DefineConstructor('RTSpecialName, HideBySig, Public', [System.Reflection.CallingConventions]::Standard, $Parameters)
+	$ConstructorBuilder.SetImplementationFlags('Runtime, Managed')
+	$MethodBuilder = $TypeBuilder.DefineMethod('Invoke', 'Public, HideBySig, NewSlot, Virtual', $ReturnType, $Parameters)
+	$MethodBuilder.SetImplementationFlags('Runtime, Managed')
+	
+	Write-Output $TypeBuilder.CreateType()
+}
+
+$WaitForSingleObjectAddr = Get-ProcAddress kernel32.dll WaitForSingleObject
+$WaitForSingleObjectDelegate = Get-DelegateType @([IntPtr], [UInt32]) ([UInt32])
+$WaitForSingleObject = [System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($WaitForSingleObjectAddr, $WaitForSingleObjectDelegate)
+#$Win32Functions | Add-Member -MemberType NoteProperty -Name WaitForSingleObject -Value $WaitForSingleObject
+# CODE END from https://github.com/PowerShellMafia/PowerSploit/
+
+Add-Type -TypeDefinition $Source -Language CSharp
+
+function Start-ProcessAsCurrentUser {
+	param(
+		[string] $commandline = "cmd.exe" ,
+		[string] $workingDir = "c:\\windows\\system32",
+		[switch] $wait
+	)
+	$procInfo = New-Object Session0.AppLaunch+PROCESS_INFORMATION
+	$res = [Session0.AppLaunch]::Start($commandline,$workingDir,[ref]$procInfo)
+	if (!$res) { throw "Error while trying to create process" }
+	if ($wait){
+		Write-Host "Waiting for process termination $($procInfo.hProcess)"
+		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF") 	
+	}
+	return
+}
+
+#endregion
+
+
+if ($Help) { return Show-Help }
+else { Main }
