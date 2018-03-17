@@ -61,8 +61,10 @@ Every powershell script (computer or user mode) must start with :
   $global:DODO_SCRIPT_VERSION    = "1.0"
 ```
 
-Thoses 2 informations will be uploaded to **Dodo Server** and will allow the administrator (you) to allow or
-not the execution of this specific script on a specific computer for instance based on the scriptname and the script version.
+Thoses 2 informations will be uploaded to **Dodo Server** and will allow the administrator
+(you) for each script name and version, to allow or not the execution of this specific
+script on a specific computer or for a specific user (by adding thoses computers
+or users to the script's "tester" list).
 
 Please note that thoses 2 variables are just strings, so the version number could be anything and not only numerical value.
 
