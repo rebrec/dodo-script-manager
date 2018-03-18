@@ -205,47 +205,125 @@ sort of Linux Console on your Windows computer with a lot of useful tools like `
 
 ### Dodo Server
 
-Run this code as user `root`
+**TLDR** : Run this code as user `root`
 
 ```
 apt-get install curl
-# Create a user `dodo` with
 adduser dodo
-# Switch to this new user using
 su - dodo
-# Install [nvm](https://github.com/creationix/nvm) :
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
-# Run your current shell again to be able to use nvm
 $SHELL
-# Install needed version of (Node.js)[https://nodejs.org/]
 nvm install v6.9.4
-# Install (pm2)[http://pm2.keymetrics.io/] :
 npm install pm2 -g
-# Clone this repository :
 git clone https://github.com/rebrec/dodo-script-manager.git
-# Enter the repository folder
 cd dodo-script-manager
-# Installed needed packages
 npm i
-# Run the server
 pm2 start app
-# Save current process list managed by pm2 to run at server startup
 pm2 Save
-# Generate startup script for your distribution (auto detection)
 ############################################################################################
 # Please Read carefully the output of the next command :
 # pm2 will now ask you to run some command as root.
 # so simply copy / paste it to your terminal
 ############################################################################################
 pm2 startup
-# Exit new shell + exit su command (to go back as root so you can paste your command)
 exit 2>1 1>/dev/null
 exit 2>1 1>/dev/null
-############################################################################################
 ```
 
+**Explaination :**
+
+Install curl
+
+```
+apt-get install curl
+```
+
+Create a user `dodo` with
+
+```
+adduser dodo
+```
+
+Switch to this new user using
+
+```
+su - dodo
+```
+
+Install [nvm](https://github.com/creationix/nvm) :
+
+```
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+```
+
+Run your current shell again to be able to use nvm
+
+```
+$SHELL
+```
+
+Install needed version of [Node.js]([https://nodejs.org/)
+
+```
+nvm install v6.9.4
+```
+
+Install [pm2](http://pm2.keymetrics.io/) :
+
+```
+npm install pm2 -g
+```
+
+Clone this repository :
+
+```
+git clone https://github.com/rebrec/dodo-script-manager.git
+```
+
+Enter the repository folder
+
+```
+cd dodo-script-manager
+```
+
+Installed needed packages
+
+```
+npm i
+```
+
+Run the server
+
+```
+pm2 start app
+```
+
+Save current process list managed by pm2 to run at server startup
+
+```
+pm2 Save
+```
+
+Generate startup script for your distribution (auto detection)
+```
+pm2 startup
+```
+
+**The previous command will display a command that you have to run as *root*.**
+
+Exit the previous new shell and exit su command (to go back as root so you can paste your command)
+
+```
+exit 2>1 1>/dev/null
+exit 2>1 1>/dev/null
+```
+
+Now you should be `root` again, to type the command suggested by `pm2 startup`
+
+
 If everything went well, you should be able to access Dodo Server using your browser at
-`http://YOUR_SERVER_IP:8088/`
+`http://YOUR_SERVER_IP:8088/` and whenever you restart your server, **Dodo Server** will 
+be run again.
 
 
 ### Dodo Launcher
