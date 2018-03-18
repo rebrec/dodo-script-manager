@@ -73,53 +73,52 @@ Function Start-ProcessAndLog{
         [switch] $runAsCurrentUser,
         $ArgumentList
     )
-    Log-Message -v 3 " "
-    Log-Message -v 3 " "
-    Log-Message -v 3 "Starting $cmd $ArgumentList"
+    Log-Message -v 4 " "
+    Log-Message -v 4 " "
+    Log-Message -v 4 "Starting $cmd $ArgumentList"
+    $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
+    $arguments = " /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
     if ($runAsCurrentUser) {
-       	$outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
-        $commandline = "$RUN_HIDDEN cmd.exe /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
-        # working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
+       	# working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
         ## the below line would have been perfect but it seems there is a string length limitation that is reached
         # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
-        Log-Message -v 4 "Usermode : running $commandline"
+        $commandline = "$RUN_HIDDEN cmd.exe" + $arguments
+        Log-Message -v 5 "Usermode : running $commandline"
         Start-ProcessAsCurrentUser -wait  -commandline $commandline
-        Log-Message -v 4 " "
-        Log-Message -v 4 "## OUTPUT and ERROR START : $outputFile"
+        Log-Message -v 3 " "
+        Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
         $content = $(Get-Content -encoding OEM $outputFile)
         if (-not $content) { 
             $content = "No output" 
         }
-        Log-Message -v 4 $content
-        Log-Message -v 4 "## OUTPUT and ERROR END"
+        Log-Message -v 3 $content
+        Log-Message -v 3 "## OUTPUT and ERROR END"
         
     } else {
-        $errorFile     = "$DODO_LOG_DIR\$timestamp-$logName-err.log"
-   	    $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-out.log"
-	    Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -wait -RedirectStandardError $errorFile -RedirectStandardOutput $outputFile
-        Log-Message -v 4 " "
-        Log-Message -v 4 "## OUTPUT START : $outputFile"
+        Log-Message -v 5 "Computermode : running cmd.exe $arguments"
+        Start-Process -FilePath "cmd.exe" -ArgumentList $arguments -wait
+        Log-Message -v 3 " "
+        Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
         $content = $(Get-Content -encoding OEM $outputFile)
         if (-not $content) { 
             $content = "No output" 
         }
-        Log-Message -v 4 $content
-        Log-Message -v 4 "## OUTPUT END"
-        Log-Message -v 4 " "
-        Log-Message -v 4 "## ERROR START : $errorFile"
-        $content = $(Get-Content -encoding OEM $errorFile)
-        if (-not $content) { 
-            $content = "No output" 
-        }
-        Log-Message -v 4 $content
-        Log-Message -v 4 "## ERROR END"
-        Log-Message -v 4 " "
-
+        Log-Message -v 3 $content
+        Log-Message -v 3 "## OUTPUT and ERROR END"
+        Log-Message -v 3 " "
+    }
+    if (Test-Path $outputFile) {
+        Remove-Item -Path $outputFile -Force
     }
 	    
 }
 
 Function Main{
+    # Remove Log files older than 15 days
+    $limit = (Get-Date).AddDays(-15)
+    # Delete files older than the $limit.
+    Get-ChildItem -Path $DODO_LOG_DIR -Recurse -Force | Where-Object { !$_.PSIsContainer -and $_.CreationTime -lt $limit } | Remove-Item -Force
+
 	Log-Message -v 1 "Generation of Logfile $DODO_LOG_FILE"
 	Log-Message -v 1 "###########################################################"
 	Log-Message -v 2 "Environment variables : "
@@ -160,6 +159,7 @@ Function Main{
     if ($Debug) { start $DODO_LOG_FILE }
 }
 
+
 Function Get-DodoEncodedLauncher{
 	param (
         [ValidateNotNullOrEmpty()]
@@ -183,8 +183,8 @@ Function Get-ScriptFromTemplate{
         [ValidateNotNullOrEmpty()] $variables,
         [string] $template="default"
     )
-    Log-Message -v 3 "[Get-ScriptFromTemplate] Variables are :"
-    Log-Message -v 3 $variables
+    Log-Message -v 5 "[Get-ScriptFromTemplate] Variables are :"
+    Log-Message -v 5 $variables
 	$templateFullPath = "$DODO_TEMPLATE_DIR\\$template.ps1"
     $templateContent = Get-Content -raw $templateFullPath
     $variables.PsObject.Properties | % {
