@@ -21,6 +21,7 @@ nbproject
 .sass-cache
 .session
 *.log
+dist
 #
 # Ignore build stuff
 /build/*
