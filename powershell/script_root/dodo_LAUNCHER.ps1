@@ -50,14 +50,19 @@ if ($DEFAULT_DODO_TEMPLATE_DIR) { $DODO_TEMPLATE_DIR   = $DEFAULT_DODO_TEMPLATE_
 if ($PSBoundParameters.ContainsKey("Debug") -ne $true){
     $Debug = $DEFAULT_DODO_Debug
 }
+if ($Debug) { $DODO_LAUNCHER_LOG_LEVEL = 100 }
 
 $RUN_HIDDEN                    = "$DODO_BIN_DIR\run_hidden.exe"
 
 Function Log-Message{
     param(
+        [Alias("v")]
+        [ValidateNotNullOrEmpty()]
+        $verbosity,
         [ValidateNotNullOrEmpty()]
         $message
     )
+    if ($verbosity -gt $DODO_LAUNCHER_LOG_LEVEL) { return }
     Write-Output $message  | % { Write-Host $_; Out-File -FilePath $DODO_LOG_FILE -Append -InputObject $_ }       
 }
 
@@ -68,68 +73,68 @@ Function Start-ProcessAndLog{
         [switch] $runAsCurrentUser,
         $ArgumentList
     )
-    Log-Message " "
-    Log-Message " "
-    Log-Message "Starting $cmd $ArgumentList"
+    Log-Message -v 3 " "
+    Log-Message -v 3 " "
+    Log-Message -v 3 "Starting $cmd $ArgumentList"
     if ($runAsCurrentUser) {
        	$outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
         $commandline = "$RUN_HIDDEN cmd.exe /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
         # working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
         ## the below line would have been perfect but it seems there is a string length limitation that is reached
         # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
-        Log-Message "Usermode : running $commandline"
+        Log-Message -v 4 "Usermode : running $commandline"
         Start-ProcessAsCurrentUser -wait  -commandline $commandline
-        Log-Message " "
-        Log-Message "## OUTPUT and ERROR START : $outputFile"
+        Log-Message -v 4 " "
+        Log-Message -v 4 "## OUTPUT and ERROR START : $outputFile"
         $content = $(Get-Content -encoding OEM $outputFile)
         if (-not $content) { 
             $content = "No output" 
         }
-        Log-Message $content
-        Log-Message "## OUTPUT and ERROR END"
+        Log-Message -v 4 $content
+        Log-Message -v 4 "## OUTPUT and ERROR END"
         
     } else {
         $errorFile     = "$DODO_LOG_DIR\$timestamp-$logName-err.log"
    	    $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-out.log"
 	    Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -wait -RedirectStandardError $errorFile -RedirectStandardOutput $outputFile
-        Log-Message " "
-        Log-Message "## OUTPUT START : $outputFile"
+        Log-Message -v 4 " "
+        Log-Message -v 4 "## OUTPUT START : $outputFile"
         $content = $(Get-Content -encoding OEM $outputFile)
         if (-not $content) { 
             $content = "No output" 
         }
-        Log-Message $content
-        Log-Message "## OUTPUT END"
-        Log-Message " "
-        Log-Message "## ERROR START : $errorFile"
+        Log-Message -v 4 $content
+        Log-Message -v 4 "## OUTPUT END"
+        Log-Message -v 4 " "
+        Log-Message -v 4 "## ERROR START : $errorFile"
         $content = $(Get-Content -encoding OEM $errorFile)
         if (-not $content) { 
             $content = "No output" 
         }
-        Log-Message $content
-        Log-Message "## ERROR END"
-        Log-Message " "
+        Log-Message -v 4 $content
+        Log-Message -v 4 "## ERROR END"
+        Log-Message -v 4 " "
 
     }
 	    
 }
 
 Function Main{
-	Log-Message "Generation of Logfile $DODO_LOG_FILE"
-	Log-Message "###########################################################"
-	Log-Message "Environment variables : "
-	Log-Message " - DODO_BASE_DIR     = $DODO_BASE_DIR"
-	Log-Message " - DODO_BIN_DIR      = $DODO_BIN_DIR"
-	Log-Message " - DODO_SCRIPT_DIR   = $DODO_SCRIPT_DIR"
-	Log-Message " - DODO_TEMPLATE_DIR = $DODO_TEMPLATE_DIR"
-	Log-Message " - DODO_LOG_DIR      = $DODO_LOG_DIR"
-	Log-Message " - DODO_LIB_PATH     = $DODO_LIB_PATH"
-	Log-Message " - UsermodeOnly      = $UsermodeOnly"
-	Log-Message " - ComputermodeOnly  = $ComputermodeOnly"
-	Log-Message " - SpecificScript    = $SpecificScript"
-	Log-Message " - Debug             = $Debug"
-	Log-Message "###########################################################"
-	Log-Message "- Granting access to 'everyone' to the file"
+	Log-Message -v 1 "Generation of Logfile $DODO_LOG_FILE"
+	Log-Message -v 1 "###########################################################"
+	Log-Message -v 2 "Environment variables : "
+	Log-Message -v 2 " - DODO_BASE_DIR     = $DODO_BASE_DIR"
+	Log-Message -v 2 " - DODO_BIN_DIR      = $DODO_BIN_DIR"
+	Log-Message -v 2 " - DODO_SCRIPT_DIR   = $DODO_SCRIPT_DIR"
+	Log-Message -v 2 " - DODO_TEMPLATE_DIR = $DODO_TEMPLATE_DIR"
+	Log-Message -v 2 " - DODO_LOG_DIR      = $DODO_LOG_DIR"
+	Log-Message -v 2 " - DODO_LIB_PATH     = $DODO_LIB_PATH"
+	Log-Message -v 2 " - UsermodeOnly      = $UsermodeOnly"
+	Log-Message -v 2 " - ComputermodeOnly  = $ComputermodeOnly"
+	Log-Message -v 2 " - SpecificScript    = $SpecificScript"
+	Log-Message -v 2 " - Debug             = $Debug"
+	Log-Message -v 2 "###########################################################"
+	Log-Message -v 2 "- Granting access to 'everyone' to the file"
 	$cmd = 'icacls.exe'
 	
     $parameters = "$DODO_LOG_DIR" + '  /grant "Tout le monde:(OI)(CI)F" /T'
@@ -149,7 +154,7 @@ Function Main{
 		} elseif ($file.Name -imatch '^computermode-.*'){
 			if ($UsermodeOnly -ne $true) { Run-DodoScript $_ -Debug:$Debug }
 		} else {
-			Log-Message "Skipping malformed scriptname $($file.Name)"
+			Log-Message -v 1 "Skipping malformed scriptname $($file.Name)"
 		}
 	}
     if ($Debug) { start $DODO_LOG_FILE }
@@ -165,11 +170,10 @@ Function Get-DodoEncodedLauncher{
     Add-Member -InputObject $variables -MemberType NoteProperty -Name "DODO_LIB_PATH"     -Value $DODO_LIB_PATH
     Add-Member -InputObject $variables -MemberType NoteProperty -Name "DODO_LOG_FILE"     -Value $DODO_LOG_FILE
     Add-Member -InputObject $variables -MemberType NoteProperty -Name "scriptFullPath"    -Value $scriptFullPath
-    Write-Host "Variables are :"
-    Write-Host $variables
-	$command = $(Get-ScriptFromTemplate -variables $variables)
+    Add-Member -InputObject $variables -MemberType NoteProperty -Name "Debug"             -Value $Debug
+    $command = $(Get-ScriptFromTemplate -variables $variables)
 
-	if ($debug) { Log-Message "[Get-DodoEncodedLauncher] Generating base64 string from : `r`n$command" }
+	if ($debug) { Log-Message -v 3 "[Get-DodoEncodedLauncher] Generating base64 string from : `r`n$command" }
 	$b64command = [System.Convert]::ToBase64String([System.Text.Encoding]::UNICODE.GetBytes($command))	
 	return $b64command
 }
@@ -179,7 +183,9 @@ Function Get-ScriptFromTemplate{
         [ValidateNotNullOrEmpty()] $variables,
         [string] $template="default"
     )
-    $templateFullPath = "$DODO_TEMPLATE_DIR\\$template.ps1"
+    Log-Message -v 3 "[Get-ScriptFromTemplate] Variables are :"
+    Log-Message -v 3 $variables
+	$templateFullPath = "$DODO_TEMPLATE_DIR\\$template.ps1"
     $templateContent = Get-Content -raw $templateFullPath
     $variables.PsObject.Properties | % {
         $templateContent = $templateContent -replace "@@$($_.Name)", $_.Value
@@ -187,7 +193,7 @@ Function Get-ScriptFromTemplate{
     if ($Debug) {
         $scriptFilename = $(gci $($variables.scriptFullPath)).Name
         $scriptFullPath = "$DODO_LOG_DIR\\$timestamp-generated-script-$scriptFilename"
-        Log-Message "Creating debug script : $scriptFullPath"
+        Log-Message -v 1 "Creating debug script : $scriptFullPath"
         Write-Output $templateContent | Out-File -FilePath $scriptFullPath
     }
     $templateContent
@@ -207,7 +213,7 @@ Function Run-DodoScript{
 	#	$parameters += " -NoExit"
 	#}
 	$parameters += " -NonInteractive -ExecutionPolicy Unrestricted -EncodedCommand $b64command"
-	Log-Message "[Run-DodoScript] Going to launch $($script.FullName) (Usermode=$Usermode)"
+	Log-Message -v 1 "[Run-DodoScript] Going to launch $($script.FullName) (Usermode=$Usermode)"
 	Start-ProcessAndLog -logName $script.Basename -FilePath $cmd -ArgumentList $parameters -runAsCurrentUser:$Usermode
 	
 }
@@ -524,7 +530,7 @@ function Start-ProcessAsCurrentUser {
 	$res = [Session0.AppLaunch]::Start($commandline,$workingDir,[ref]$procInfo)
 	if (!$res) { throw "Error while trying to create process" }
 	if ($wait){
-		Write-Host "Waiting for process termination $($procInfo.hProcess)"
+		Log-Message -v 3 "Waiting for process termination $($procInfo.hProcess)"
 		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF") 	
 	}
 	return
