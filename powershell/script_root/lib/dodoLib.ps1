@@ -2,7 +2,7 @@ $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 
 $global:DODO_HOSTNAME = "localhost"
 $global:DODO_PORT = 8088
-Import-Module "$scriptPath\dodoConfig.ps1"
+Import-Module "$scriptPath\..\config.ps1"
 
 $global:DODO_BASE_URL          = "http://$DODO_HOSTNAME" + ":" + "$DODO_PORT/api/script"
 $global:DODO_SCRIPT_NAME       = "Scriptname-not-defined"

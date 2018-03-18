@@ -1,6 +1,5 @@
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
-$scriptPath = "\\sdis72.fr\Netlogon\Public\scripts\powershell"
-Import-Module "$scriptPath\dodoLib.ps1"
+Import-Module "$scriptPath\..\lib\dodoLib.ps1"
 
 $global:DODO_BASE_URL          = "http://$DODO_HOSTNAME" + ":" + "$DODO_PORT/api/script"
 $global:DODO_SCRIPT_NAME       = "Scriptname-not-defined"
