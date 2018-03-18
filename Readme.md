@@ -182,14 +182,112 @@ With the help of Dodo, you will now be able to :
 - Have access to a bunch of logs if needed on the computer executing Dodo Launcher in case
   of advanced troubleshooting.
 
+
+## Prerequisites
+
+You will need :
+
+- A Server (Linux is probably the easier choice) hosting the **Dodo Server**
+- A Windows Network share trusted in your company (usually a subfolder of your
+  company's DFS domain root will be perfect, ie : `\\corp.contonso.com\netlogon\DODO\`)
+- A computer from which you will :
+  - Download the sources,
+  - Deploy the server,
+  - Install and configure the **Dodo Launcher** Root directory
+  - Upload scripts
+
 ## Installation
 
-### Dodo Launcher
-
+*Note : to install this software, you will have to download the source using `git`
+If you are a Windows user and don't know how to simply get and use git, i recommend
+you to get (Babun)[http://babun.github.io/]. This software will provide you with a
+sort of Linux Console on your Windows computer with a lot of useful tools like `git`*
 
 ### Dodo Server
 
+Run this code as user `root`
 
+```
+apt-get install curl
+# Create a user `dodo` with
+adduser dodo
+# Switch to this new user using
+su - dodo
+# Install (nvm)[https://github.com/creationix/nvm] :
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+# Run your current shell again to be able to use nvm
+$SHELL
+# Install needed version of (Node.js)[https://nodejs.org/]
+nvm install v6.9.4
+# Install (pm2)[http://pm2.keymetrics.io/] :
+npm install pm2 -g
+# Clone this repository :
+git clone https://github.com/rebrec/dodo-script-manager.git
+# Enter the repository folder
+cd dodo-script-manager
+# Installed needed packages
+npm i
+# Run the server
+pm2 start app
+# Save current process list managed by pm2 to run at server startup
+pm2 Save
+# Generate startup script for your distribution (auto detection)
+############################################################################################
+# Please Read carefully the output of the next command :
+# pm2 will now ask you to run some command as root.
+# so simply copy / paste it to your terminal
+############################################################################################
+pm2 startup
+# Exit new shell + exit su command (to go back as root so you can paste your command)
+exit 2>1 1>/dev/null
+exit 2>1 1>/dev/null
+############################################################################################
+```
+
+If everything went well, you should be able to access Dodo Server using your browser at
+`http://YOUR_SERVER_IP:8088/`
+
+
+### Dodo Launcher
+
+#### Setup the repository
+- Download the source using : `git clone https://github.com/rebrec/dodo-script-manager.git`
+- Create a folder named `DODO` in your company's DFS domain root (`\\corp.contoso.com\netlogon\DODO`)
+- Copy the `powershell\script_root` subfolder's content to the above network share
+- Copy `\\corp.contoso.com\netlogon\DODO\example\config.ps1` to `\\corp.contoso.com\netlogon\DODO\`
+  and edit if needed path informations in this file to suite your specific needs (you don't need to
+  edit it if you want to do a default installation).
+- Copy `\\corp.contoso.com\netlogon\DODO\example\demo` folder to `\\corp.contoso.com\netlogon\DODO\scripts\demo`.
+  This will provide a demo script that has no impact on computers but will be used for starting working
+  on **Dodo Server**
+
+#### Initial test from your own computer
+
+#### Deploy the client
+
+You will need to create a scheduled task on every computer that will run at a specific interval :
+**PUT FULL COMMAND LINE HERE**
+```
+powershell ....... \\corp.contoso.com\netlogon\DODO\Dodo_Launcher.ps1
+```
+
+You can create such scheduled task using the following command :
+**PUT FULL COMMAND LINE HERE**
+```
+schtasks / XXXXXXXXX
+```
+
+*Performance considerations : You may need to define a different interval for your scheduled task
+depending on the location of your clients :
+- If running on the LAN, i would suggest to be about 15 minutes
+- If running on slow WAN connections, you may increase the interval to 30 minutes maybe
+You may also want to increase this interval if you have a lot of clients (maybe 1000+) to not
+overload the server / and your network.
+All this will also depend of what you will do in scripts that you will deploy (if one of your Scripts
+copy some big file over the network, for instance, you will have to increase the update interval)*
+
+
+Install
 ## Issues
 
 ## Contribute
