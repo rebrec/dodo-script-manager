@@ -186,7 +186,8 @@ Function Get-ScriptFromTemplate{
     Log-Message -v 5 "[Get-ScriptFromTemplate] Variables are :"
     Log-Message -v 5 $variables
 	$templateFullPath = "$DODO_TEMPLATE_DIR\\$template.ps1"
-    $templateContent = Get-Content -raw $templateFullPath
+    #$templateContent = Get-Content -raw $templateFullPath
+    $templateContent = Get-Content $templateFullPath | Out-String
     $variables.PsObject.Properties | % {
         $templateContent = $templateContent -replace "@@$($_.Name)", $_.Value
     }
@@ -531,13 +532,69 @@ function Start-ProcessAsCurrentUser {
 	if (!$res) { throw "Error while trying to create process" }
 	if ($wait){
 		Log-Message -v 3 "Waiting for process termination $($procInfo.hProcess)"
-		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF") 	
+		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF")
 	}
 	return
 }
 
 #endregion
 
+# For compatibility with Powershell v2
+if ($PSVersionTable.PSVersion -eq "2.0") {
 
+    Function Start-ProcessAndLog{
+        param(
+            [ValidateNotNullOrEmpty()][string] $logName,
+            [ValidateNotNullOrEmpty()][string] $FilePath,
+            [switch] $runAsCurrentUser,
+            $ArgumentList
+        )
+        Log-Message -v 4 " "
+        Log-Message -v 4 " "
+        Log-Message -v 4 "Starting $cmd $ArgumentList"
+        $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
+        $arguments = " /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
+        if ($runAsCurrentUser) {
+       	    # working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
+            ## the below line would have been perfect but it seems there is a string length limitation that is reached
+            # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
+            $commandline = "$RUN_HIDDEN cmd.exe" + $arguments
+            Log-Message -v 5 "Usermode : running $commandline"
+            Start-ProcessAsCurrentUser -wait  -commandline $commandline
+            Log-Message -v 3 " "
+            Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
+            # $content = $(Get-Content -encoding OEM $outputFile)
+            $enc = [System.Text.Encoding]::GetEncoding($Host.CurrentCulture.TextInfo.OEMCodePage)
+            $bytes = [System.IO.File]::ReadAllBytes($outputFile)
+            $content = $enc.GetString($bytes)
+
+            if (-not $content) { 
+                $content = "No output" 
+            }
+            Log-Message -v 3 $content
+            Log-Message -v 3 "## OUTPUT and ERROR END"
+        
+        } else {
+            Log-Message -v 5 "Computermode : running cmd.exe $arguments"
+            Start-Process -FilePath "cmd.exe" -ArgumentList $arguments -wait
+            Log-Message -v 3 " "
+            Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
+            # $content = $(Get-Content -encoding OEM $outputFile)
+            $enc = [System.Text.Encoding]::GetEncoding($Host.CurrentCulture.TextInfo.OEMCodePage)
+            $bytes = [System.IO.File]::ReadAllBytes($outputFile)
+            $content = $enc.GetString($bytes)
+
+            if (-not $content) { 
+                $content = "No output" 
+            }
+            Log-Message -v 3 $content
+            Log-Message -v 3 "## OUTPUT and ERROR END"
+            Log-Message -v 3 " "
+        }
+        if (Test-Path $outputFile) {
+            Remove-Item -Path $outputFile -Force
+        }   
+    }
+}
 if ($Help) { return Show-Help }
 else { Main }
