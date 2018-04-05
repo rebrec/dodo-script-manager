@@ -50,6 +50,7 @@ if ($DEFAULT_DODO_TEMPLATE_DIR) { $DODO_TEMPLATE_DIR   = $DEFAULT_DODO_TEMPLATE_
 if ($PSBoundParameters.ContainsKey("Debug") -ne $true){
     $Debug = $DEFAULT_DODO_Debug
 }
+if (Test-Path "$DODO_LOG_DIR\debug") { $Debug = $true }
 if ($Debug) { $DODO_LAUNCHER_LOG_LEVEL = 100 }
 
 $RUN_HIDDEN                    = "$DODO_BIN_DIR\run_hidden.exe"
@@ -529,7 +530,7 @@ function Start-ProcessAsCurrentUser {
 	)
 	$procInfo = New-Object Session0.AppLaunch+PROCESS_INFORMATION
 	$res = [Session0.AppLaunch]::Start($commandline,$workingDir,[ref]$procInfo)
-	if (!$res) { throw "Error while trying to create process" }
+	if (!$res) { throw "Error while trying to create process : $res" }
 	if ($wait){
 		Log-Message -v 3 "Waiting for process termination $($procInfo.hProcess)"
 		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF")
