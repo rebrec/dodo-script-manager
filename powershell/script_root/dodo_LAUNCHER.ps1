@@ -8,7 +8,9 @@ param (
 	[string] $DODO_SCRIPT_DIR,
 	[string] $DODO_TEMPLATE_DIR,
 	[string] $DODO_BIN_DIR,
-	[switch] $Debug
+	[switch] $NoConsoleOutput,
+	[switch] $Debug,
+	[switch] $ShowLog
 )
 
 # This script will run every PS1 scripts within $DODO_BASE_DIR
@@ -54,6 +56,7 @@ if (Test-Path "$DODO_LOG_DIR\debug") { $Debug = $true }
 if ($Debug) { $DODO_LAUNCHER_LOG_LEVEL = 100 }
 
 $RUN_HIDDEN                    = "$DODO_BIN_DIR\run_hidden.exe"
+$spacer = "    "
 
 Function Log-Message{
     param(
@@ -64,7 +67,10 @@ Function Log-Message{
         $message
     )
     if ($verbosity -gt $DODO_LAUNCHER_LOG_LEVEL) { return }
-    Write-Output $message  | % { Write-Host $_; Out-File -FilePath $DODO_LOG_FILE -Append -InputObject $_ }       
+    Write-Output $message  | % { 
+		if ($NoConsoleOutput -ne $True) { Write-Host $_ }
+		Out-File -FilePath $DODO_LOG_FILE -Append -InputObject $_ 
+	}       
 }
 
 Function Start-ProcessAndLog{
@@ -74,37 +80,42 @@ Function Start-ProcessAndLog{
         [switch] $runAsCurrentUser,
         $ArgumentList
     )
-    Log-Message -v 4 " "
-    Log-Message -v 4 " "
-    Log-Message -v 4 "Starting $cmd $ArgumentList"
+    $spacer = "    "
+    Log-Message -v 5 " "
     $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
-    $arguments = " /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
+    $arguments = " /c " + '"' + "$FilePath $ArgumentList 2>&1 > $outputFile" + '"'
     if ($runAsCurrentUser) {
        	# working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
         ## the below line would have been perfect but it seems there is a string length limitation that is reached
         # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
         $commandline = "$RUN_HIDDEN cmd.exe" + $arguments
-        Log-Message -v 5 "Usermode : running $commandline"
+        Log-Message -v 5 "Usermode : running Start-ProcessAsCurrentUser -wait  -commandline $commandline ... [$($commandline.Length)]"
         Start-ProcessAsCurrentUser -wait  -commandline $commandline
         Log-Message -v 3 " "
         Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
+
         $content = $(Get-Content -encoding OEM $outputFile)
         if (-not $content) { 
-            $content = "No output" 
+            $content = "$($spacer)No output"
+            Log-Message -v 3 $content
+        } else {
+            $content | % { Log-Message -v 3 "$($spacer)$_" }
         }
-        Log-Message -v 3 $content
+        
         Log-Message -v 3 "## OUTPUT and ERROR END"
         
     } else {
-        Log-Message -v 5 "Computermode : running cmd.exe $arguments"
+        Log-Message -v 5 "Computermode : running Start-Process -FilePath cmd.exe -ArgumentList $arguments -wait ... [$($arguments.Length)]"
         Start-Process -FilePath "cmd.exe" -ArgumentList $arguments -wait
         Log-Message -v 3 " "
         Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
         $content = $(Get-Content -encoding OEM $outputFile)
         if (-not $content) { 
-            $content = "No output" 
+            $content = "$($spacer)No output" 
+            Log-Message -v 3 $content
+        } else {
+            $content | % { Log-Message -v 3 "$($spacer)$_" }
         }
-        Log-Message -v 3 $content
         Log-Message -v 3 "## OUTPUT and ERROR END"
         Log-Message -v 3 " "
     }
@@ -123,16 +134,17 @@ Function Main{
 	Log-Message -v 1 "Generation of Logfile $DODO_LOG_FILE"
 	Log-Message -v 1 "###########################################################"
 	Log-Message -v 2 "Environment variables : "
-	Log-Message -v 2 " - DODO_BASE_DIR     = $DODO_BASE_DIR"
-	Log-Message -v 2 " - DODO_BIN_DIR      = $DODO_BIN_DIR"
-	Log-Message -v 2 " - DODO_SCRIPT_DIR   = $DODO_SCRIPT_DIR"
-	Log-Message -v 2 " - DODO_TEMPLATE_DIR = $DODO_TEMPLATE_DIR"
-	Log-Message -v 2 " - DODO_LOG_DIR      = $DODO_LOG_DIR"
-	Log-Message -v 2 " - DODO_LIB_PATH     = $DODO_LIB_PATH"
-	Log-Message -v 2 " - UsermodeOnly      = $UsermodeOnly"
-	Log-Message -v 2 " - ComputermodeOnly  = $ComputermodeOnly"
-	Log-Message -v 2 " - SpecificScript    = $SpecificScript"
-	Log-Message -v 2 " - Debug             = $Debug"
+	Log-Message -v 2 " - DODO_BASE_DIR    		 	= $DODO_BASE_DIR"
+	Log-Message -v 2 " - DODO_BIN_DIR      			= $DODO_BIN_DIR"
+	Log-Message -v 2 " - DODO_SCRIPT_DIR   			= $DODO_SCRIPT_DIR"
+	Log-Message -v 2 " - DODO_TEMPLATE_DIR 			= $DODO_TEMPLATE_DIR"
+	Log-Message -v 2 " - DODO_LOG_DIR     			= $DODO_LOG_DIR"
+	Log-Message -v 2 " - DODO_LIB_PATH     			= $DODO_LIB_PATH"
+	Log-Message -v 2 " - UsermodeOnly      			= $UsermodeOnly"
+	Log-Message -v 2 " - ComputermodeOnly  			= $ComputermodeOnly"
+	Log-Message -v 2 " - SpecificScript    			= $SpecificScript"
+	Log-Message -v 2 " - DODO_LAUNCHER_LOG_LEVEL    = $DODO_LAUNCHER_LOG_LEVEL"
+	Log-Message -v 2 " - Debug             			= $Debug"
 	Log-Message -v 2 "###########################################################"
 	Log-Message -v 2 "- Granting access to 'everyone' to the file"
 	$cmd = 'icacls.exe'
@@ -157,7 +169,7 @@ Function Main{
 			Log-Message -v 1 "Skipping malformed scriptname $($file.Name)"
 		}
 	}
-    if ($Debug) { start $DODO_LOG_FILE }
+    if ($ShowLog) { start $DODO_LOG_FILE }
 }
 
 
@@ -174,7 +186,7 @@ Function Get-DodoEncodedLauncher{
     Add-Member -InputObject $variables -MemberType NoteProperty -Name "Debug"             -Value $Debug
     $command = $(Get-ScriptFromTemplate -variables $variables)
 
-	if ($debug) { Log-Message -v 3 "[Get-DodoEncodedLauncher] Generating base64 string from : `r`n$command" }
+	#if ($debug) { Log-Message -v 3 "[Get-DodoEncodedLauncher] Generating base64 string from : `r`n$command" }
 	$b64command = [System.Convert]::ToBase64String([System.Text.Encoding]::UNICODE.GetBytes($command))	
 	return $b64command
 }
@@ -185,7 +197,7 @@ Function Get-ScriptFromTemplate{
         [string] $template="default"
     )
     Log-Message -v 5 "[Get-ScriptFromTemplate] Variables are :"
-    Log-Message -v 5 $variables
+    Log-Message -v 5 "[Get-ScriptFromTemplate] $variables"
 	$templateFullPath = "$DODO_TEMPLATE_DIR\\$template.ps1"
     #$templateContent = Get-Content -raw $templateFullPath
     $templateContent = Get-Content $templateFullPath | Out-String
@@ -214,7 +226,7 @@ Function Run-DodoScript{
 	#if ($Debug -eq $true) {
 	#	$parameters += " -NoExit"
 	#}
-	$parameters += " -NonInteractive -ExecutionPolicy Unrestricted -EncodedCommand $b64command"
+	$parameters += " -NonInteractive -Noprofile -ExecutionPolicy Unrestricted -EncodedCommand $b64command"
 	Log-Message -v 1 "[Run-DodoScript] Going to launch $($script.FullName) (Usermode=$Usermode)"
 	Start-ProcessAndLog -logName $script.Basename -FilePath $cmd -ArgumentList $parameters -runAsCurrentUser:$Usermode
 	
@@ -228,6 +240,7 @@ Available parameters :
   -UsermodeOnly         : Execute only Usermode scripts
   -ComputermodeOnly     : Execute only Computermode scripts
   -SpecificScript       : Execute only the specified script
+  -NoConsoleOutput      : Only Output to Logfile
   -Debug                : Enable Debug messages
 
 "@
@@ -241,7 +254,7 @@ Available parameters :
 #region function Start-ProcessAsCurrentUser param([string] $commandline,$workingDir, $wait) 
 
 
-# CODE START from https://www.chasewright.com/session0bypass/ 
+# CODE START inspired from https://www.chasewright.com/session0bypass/ 
 $Source = @'
 using System;
 using System.Diagnostics;
@@ -330,7 +343,12 @@ namespace Session0
         public const int NORMAL_PRIORITY_CLASS = 0x20;
         public const int HIGH_PRIORITY_CLASS = 0x80;
         public const int REALTIME_PRIORITY_CLASS = 0x100;
-
+		
+		public const uint OPEN_PROCESS_TOKEN_FAILED      = 101;
+		public const uint DUPLICATE_TOKEN_FAILED         = 102;
+		public const uint CREATE_PROCESS_AS_USER_FAILED  = 103;
+		public const uint CREATE_PROCESS_AS_USER_SUCCEED = 0;
+		
         #endregion
 
         #region Win32 API Imports
@@ -346,6 +364,9 @@ namespace Session0
             ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandle, int dwCreationFlags, IntPtr lpEnvironment,
             String lpCurrentDirectory, ref STARTUPINFO lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 
+		[DllImport("kernel32.dll", EntryPoint = "GetLastError", SetLastError = true)]
+        public static extern uint GetLastError();
+			
         [DllImport("kernel32.dll")]
         static extern bool ProcessIdToSessionId(uint dwProcessId, ref uint pSessionId);
 
@@ -370,9 +391,10 @@ namespace Session0
         /// The name of the application to launch
         /// Process information regarding the launched application that gets returned to the caller
         /// 
-        public static bool Start(String applicationName, string startingDir, out PROCESS_INFORMATION procInfo)
+        public static uint Start(String applicationName, string startingDir, out PROCESS_INFORMATION procInfo, out uint advErrorCode)
         {
             uint winlogonPid = 0;
+            advErrorCode = 0;
             IntPtr hUserTokenDup = IntPtr.Zero, hPToken = IntPtr.Zero, hProcess = IntPtr.Zero;
             procInfo = new PROCESS_INFORMATION();
 
@@ -398,7 +420,7 @@ namespace Session0
             if (!OpenProcessToken(hProcess, TOKEN_DUPLICATE, ref hPToken))
             {
                 CloseHandle(hProcess);
-                return false;
+                return OPEN_PROCESS_TOKEN_FAILED;
             }
 
             // Security attibute structure used in DuplicateTokenEx and CreateProcessAsUser
@@ -414,7 +436,9 @@ namespace Session0
             {
                 CloseHandle(hProcess);
                 CloseHandle(hPToken);
-                return false;
+                advErrorCode = GetLastError();
+                return DUPLICATE_TOKEN_FAILED;
+             //   return GetLastError();
             }
 
             // By default CreateProcessAsUser creates a process on a non-interactive window station, meaning
@@ -446,14 +470,18 @@ namespace Session0
             CloseHandle(hProcess);
             CloseHandle(hPToken);
             CloseHandle(hUserTokenDup);
-			
-			
-            return result; // return the result
-        }
-
+			if (!result) {
+				advErrorCode = GetLastError();
+                return CREATE_PROCESS_AS_USER_FAILED;
+               // return GetLastError();
+			} else {
+				return CREATE_PROCESS_AS_USER_SUCCEED;
+			}
+		}
     }
 }
 '@
+
 
 # CODE END from https://www.chasewright.com/session0bypass/ 
 
@@ -476,7 +504,8 @@ function local:Get-ProcAddress {
 	$UnsafeNativeMethods = $SystemAssembly.GetType('Microsoft.Win32.UnsafeNativeMethods')
 	# Get a reference to the GetModuleHandle and GetProcAddress methods
 	$GetModuleHandle = $UnsafeNativeMethods.GetMethod('GetModuleHandle')
-	$GetProcAddress = $UnsafeNativeMethods.GetMethod('GetProcAddress')
+	#$GetProcAddress = $UnsafeNativeMethods.GetMethod('GetProcAddress')
+	$GetProcAddress = $UnsafeNativeMethods.GetMethod('GetProcAddress', [reflection.bindingflags] "Public,Static", $null, [System.Reflection.CallingConventions]::Any, @((New-Object System.Runtime.InteropServices.HandleRef).GetType(), [string]), $null);
 	# Get a handle to the module specified
 	$Kern32Handle = $GetModuleHandle.Invoke($null, @($Module))
 	$tmpPtr = New-Object IntPtr
@@ -529,8 +558,9 @@ function Start-ProcessAsCurrentUser {
 		[switch] $wait
 	)
 	$procInfo = New-Object Session0.AppLaunch+PROCESS_INFORMATION
-	$res = [Session0.AppLaunch]::Start($commandline,$workingDir,[ref]$procInfo)
-	if (!$res) { throw "Error while trying to create process : $res" }
+    $advErrorCode = 0
+	$returnCode = [Session0.AppLaunch]::Start($commandline,$workingDir,[ref]$procInfo,[ref]$advErrorCode)
+	if ($returnCode -ne 0) { throw "Error while trying to create process : $returnCode ($advErrorCode)" }
 	if ($wait){
 		Log-Message -v 3 "Waiting for process termination $($procInfo.hProcess)"
 		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF")
@@ -552,43 +582,66 @@ if ($PSVersionTable.PSVersion -eq "2.0") {
         )
         Log-Message -v 4 " "
         Log-Message -v 4 " "
-        Log-Message -v 4 "Starting $cmd $ArgumentList"
+        Log-Message -v 4 "Starting $FilePath $ArgumentList"
         $outputFile    = "$DODO_LOG_DIR\$timestamp-$logName-both.log"
-        $arguments = " /c " + '"' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"'
+        $arguments = " /c " + '"' + "$FilePath $ArgumentList 2>&1 > $outputFile" + '"'
         if ($runAsCurrentUser) {
        	    # working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
             ## the below line would have been perfect but it seems there is a string length limitation that is reached
             # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
             $commandline = "$RUN_HIDDEN cmd.exe" + $arguments
-            Log-Message -v 5 "Usermode : running $commandline"
-            Start-ProcessAsCurrentUser -wait  -commandline $commandline
+            Log-Message -v 5 "Usermode : running (PoSh v2) Start-ProcessAsCurrentUser -wait  -commandline $commandline ... [$($commandline.Length)]"
+            try {
+                Start-ProcessAsCurrentUser -wait  -commandline $commandline
+            } 
+            catch {
+                Log-Message -v 1 "ERROR raised when trying to execute command"
+                Log-Message -v 1 $_.Exception.Message
+            }
             Log-Message -v 3 " "
             Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
-            # $content = $(Get-Content -encoding OEM $outputFile)
-            $enc = [System.Text.Encoding]::GetEncoding($Host.CurrentCulture.TextInfo.OEMCodePage)
-            $bytes = [System.IO.File]::ReadAllBytes($outputFile)
-            $content = $enc.GetString($bytes)
-
-            if (-not $content) { 
-                $content = "No output" 
+            if (Test-Path $outputFile) {
+                # $content = $(Get-Content -encoding OEM $outputFile)
+                $enc = [System.Text.Encoding]::GetEncoding($Host.CurrentCulture.TextInfo.OEMCodePage)
+                $bytes = [System.IO.File]::ReadAllBytes($outputFile)
+                $content = $enc.GetString($bytes)
+            } else {
+                Log-Message -v 3 "File doesn't exist : $outputFile (no log generated... probably an error)"
             }
-            Log-Message -v 3 $content
+            if (-not $content) { 
+                $content = "$($spacer)No output" 
+                Log-Message -v 3 $content
+            } else {
+                $content | % { Log-Message -v 3 "$($spacer)$_" }
+            }
             Log-Message -v 3 "## OUTPUT and ERROR END"
         
         } else {
-            Log-Message -v 5 "Computermode : running cmd.exe $arguments"
-            Start-Process -FilePath "cmd.exe" -ArgumentList $arguments -wait
+            Log-Message -v 5 "Computermode : running (PoSh v2) Start-Process -FilePath cmd.exe -ArgumentList $arguments -wait ... [$($arguments.Length)]"
+            try {
+                Start-Process -FilePath "cmd.exe" -ArgumentList $arguments -wait
+            } 
+            catch {
+                Log-Message -v 1 "ERROR raised when trying to execute command"
+				Log-Message -v 1 $_.Exception.Message
+            }
             Log-Message -v 3 " "
             Log-Message -v 3 "## OUTPUT and ERROR START : $outputFile"
-            # $content = $(Get-Content -encoding OEM $outputFile)
-            $enc = [System.Text.Encoding]::GetEncoding($Host.CurrentCulture.TextInfo.OEMCodePage)
-            $bytes = [System.IO.File]::ReadAllBytes($outputFile)
-            $content = $enc.GetString($bytes)
+            if (Test-Path $outputFile) {
+                # $content = $(Get-Content -encoding OEM $outputFile)
+                $enc = [System.Text.Encoding]::GetEncoding($Host.CurrentCulture.TextInfo.OEMCodePage)
+                $bytes = [System.IO.File]::ReadAllBytes($outputFile)
+                $content = $enc.GetString($bytes)
+            } else {
+                Log-Message -v 3 "File doesn't exist : $outputFile (no log generated... probably an error)"
+            }
 
             if (-not $content) { 
-                $content = "No output" 
+                $content = "$($spacer)No output" 
+                Log-Message -v 3 $content
+            } else {
+                $content | % { Log-Message -v 3 "$($spacer)$_" }
             }
-            Log-Message -v 3 $content
             Log-Message -v 3 "## OUTPUT and ERROR END"
             Log-Message -v 3 " "
         }
