@@ -15,6 +15,22 @@ Function global:Get-UniqueExecutionId {
     return "$env:COMPUTERNAME"
 }
 
+Function global:Get-DodoGUID {
+	$GUID_REG_PATH = "HKLM:\Software\rebrec\dodo\"
+	$GUID_REG_NAME = "guid"
+	$guid = Get-ItemProperty -Path $GUID_REG_PATH -Name $GUID_REG_NAME -ErrorAction SilentlyContinue
+	if ($guid -ne $null){
+		# check if a guid has already been generated. If so, return it.
+		$guid = $guid.$GUID_REG_NAME
+	} else {
+		# else, generate a new guid, save it, and return it
+		$guid = "$([guid]::NewGuid())"
+		New-Item $GUID_REG_PATH -Force | out-null
+		Set-ItemProperty -Path $GUID_REG_PATH -Name $GUID_REG_NAME -Value $guid
+	}
+	return $guid
+}
+
 # override this function if you want to add specific conditions before allowing execution (timerange, specific date, etc)
 Function global:isDodoExecutionContextCorrect {
 	Write-host "isDodoExecutionContextCorrect called !!!"
