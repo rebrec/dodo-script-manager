@@ -1,5 +1,5 @@
 ﻿param (
-	[string] $build="prod",
+	[string] $build="dev",
     [string] $RemotePath="d:\tmp\netlogon\"
 )
 if (($build -ine "dev") -and ($build -ine "prod")){
@@ -9,10 +9,11 @@ if (($build -ine "dev") -and ($build -ine "prod")){
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
 
 $projectRoot   = $(Get-Item $scriptPath).parent.FullName
-$distFolder    = "$projectRoot\dist"
-$configFolder  = "$projectRoot\config"
-$configFile    = "$configFolder\config-$build.ps1"
-$dodoFolder    = "$distFolder\DODO"
+$distFolder    		= "$projectRoot\dist"
+$configFolder  		= "$projectRoot\config"
+$configFile    		= "$configFolder\config-$build.ps1"
+$dodoFolder    		= "$distFolder\DODO"
+$dodoRemoteFolder   = "$RemotePath\DODO"
 $scriptRoot    = "$projectRoot\powershell\script_root"
 $exampleFolder = "$scriptRoot\examples"
 
@@ -20,13 +21,14 @@ Write-Host @"
 
 This script update the dist folder to reflect the latest modifications you
 may have done within $projectRoot
-projectRoot     = $projectRoot
-distFolder      = $distFolder
-configFolder    = $configFolder
-configFile      = $configFile
-dodoFolder      = $dodoFolder
-scriptRoot      = $scriptRoot
-exampleFolder   = $exampleFolder
+projectRoot     	= $projectRoot
+distFolder      	= $distFolder
+configFolder    	= $configFolder
+configFile      	= $configFile
+dodoFolder      	= $dodoFolder
+dodoRemoteFolder   	= $dodoRemoteFolder
+scriptRoot      	= $scriptRoot
+exampleFolder   	= $exampleFolder
 
 "@
 
@@ -68,9 +70,13 @@ for instance) by using
 This would copy files to \\YourDomain.corp\Netlogon\Dodo
 "@
     } else {
-        Write-Host "[+] Copying files to $RemotePath"
         if (Test-Path "$RemotePath"){
-            Copy-Item "$dodoFolder" -Destination "$RemotePath" -Recurse -Force
+			if (Test-Path "$dodoRemoteFolder"){
+				Write-Host "[+] Removing existing directory : $dodoRemoteFolder"
+				Remove-Item "$dodoRemoteFolder" -Recurse -Force
+			}
+			Write-Host "[+] Copying files to $RemotePath"
+		    Copy-Item "$dodoFolder" -Destination "$RemotePath" -Recurse -Force
         } else {
             Write-Warning "$RemotePath doesn't exists ! Skipping..."
             }
