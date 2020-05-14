@@ -1,5 +1,8 @@
 Import-Module "@@DODO_LIB_PATH";
 . '@@scriptFullPath';
+
+if ((Test-Path '@@scriptFullPath') -ne $true) { throw "Failed to load @@scriptFullPath" }
+
 $DODO_LOG_FILE = "@@DODO_LOG_FILE";
 $LOG_PREFIX = "[$DODO_SCRIPT_NAME (v $DODO_SCRIPT_VERSION)]"
 Write-Output "$LOG_PREFIX Start" | % {
