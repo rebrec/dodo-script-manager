@@ -51,8 +51,11 @@ Function global:Get-AdditionnalData{
 
 Function Get-Username {
     Try { # mainly used to get real user logged on when running the script as SYSTEM
-        $user = (Get-Process -ProcessName explorer -IncludeUserName | select -first 1).Username
-        return $user
+        # Discardes cause it needs UAC : $user = (Get-Process -ProcessName explorer -IncludeUserName | select -first 1).Username
+		$explorerProcess = Get-WmiObject Win32_Process | ? { $_.ProcessName -like 'explorer.exe' } | Select -first 1
+        $processOwner = $explorerProcess.GetOwner()
+		$user = $processOwner.Domain + '\' + $processOwner.User
+		return $user
     }
     Catch {
         return $env:USERNAME
