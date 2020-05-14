@@ -55,7 +55,8 @@ if ($PSBoundParameters.ContainsKey("Debug") -ne $true){
 if (Test-Path "$DODO_LOG_DIR\debug") { $Debug = $true }
 if ($Debug) { $DODO_LAUNCHER_LOG_LEVEL = 100 }
 
-$RUN_HIDDEN                    = "$DODO_BIN_DIR\run_hidden.exe"
+$RUN_HIDDEN_ELEVATED           = "$DODO_BIN_DIR\run_hidden-elevated.exe"
+$RUN_HIDDEN_NORMAL             = "$DODO_BIN_DIR\run_hidden-normal.exe"
 $spacer = "    "
 
 Function Log-Message{
@@ -88,7 +89,7 @@ Function Start-ProcessAndLog{
        	# working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
         ## the below line would have been perfect but it seems there is a string length limitation that is reached
         # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
-        $commandline = "$RUN_HIDDEN cmd.exe" + $arguments
+        $commandline = "$RUN_HIDDEN_NORMAL cmd.exe" + $arguments
         Log-Message -v 5 "Usermode : running Start-ProcessAsCurrentUser -wait  -commandline $commandline ... [$($commandline.Length)]"
         Start-ProcessAsCurrentUser -wait  -commandline $commandline
         Log-Message -v 3 " "
@@ -557,13 +558,22 @@ function Start-ProcessAsCurrentUser {
 		[string] $workingDir = "c:\\windows\\system32",
 		[switch] $wait
 	)
+
+	$waitIntervalHex = "0x00001388" # "0xFFFFFFFF" = infinite, "0x000003E8" (1s), "0x00001388" (5s), "0x00002710" (10s)
+	$waitInterval = 5  # sec
+	$waitCount  = 10 * 60 / 5 # 10 min
+	
 	$procInfo = New-Object Session0.AppLaunch+PROCESS_INFORMATION
     $advErrorCode = 0
 	$returnCode = [Session0.AppLaunch]::Start($commandline,$workingDir,[ref]$procInfo,[ref]$advErrorCode)
 	if ($returnCode -ne 0) { throw "Error while trying to create process : $returnCode ($advErrorCode)" }
 	if ($wait){
-		Log-Message -v 3 "Waiting for process termination $($procInfo.hProcess)"
+		$waitCnt = 0
+		Log-Message -v 3 "Waiting for process termination $($procInfo.hProcess) ($waitCnt)"
 		$WaitForSingleObject.Invoke($procInfo.hProcess, "0xFFFFFFFF")
+		# TO IMPLEMENT : save return value of WaitForSingleObject https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+		#                check if return is WAIT_TIMEOUT or other return values and do necessary stuff
+		
 	}
 	return
 }
@@ -589,7 +599,7 @@ if ($PSVersionTable.PSVersion -eq "2.0") {
        	    # working example mshta.exe vbscript:Execute("cmd = ""cmd.exe"" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")
             ## the below line would have been perfect but it seems there is a string length limitation that is reached
             # $commandline = 'mshta.exe vbscript:Execute("cmd = ""cmd.exe /c """"sleep 5 && ' + "$cmd $ArgumentList 2>&1 > $outputFile" + '"""""" : Set shell = CreateObject(""WScript.Shell"") : shell.Run cmd, 0, true : Set shell=Nothing:window.close")'
-            $commandline = "$RUN_HIDDEN cmd.exe" + $arguments
+            $commandline = "$RUN_HIDDEN_NORMAL cmd.exe" + $arguments
             Log-Message -v 5 "Usermode : running (PoSh v2) Start-ProcessAsCurrentUser -wait  -commandline $commandline ... [$($commandline.Length)]"
             try {
                 Start-ProcessAsCurrentUser -wait  -commandline $commandline
