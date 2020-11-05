@@ -64,7 +64,7 @@ Function Get-Username {
 
 Function Get-IpAddresses{
     Try {
-        $addresses = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = True' | Select -ExpandProperty IPAddress | ?{$_ -match "192\.168"} | sort | select -first 1
+        $addresses = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = True' | Select -ExpandProperty IPAddress | ? { $_ -notlike '*:*' -and $_ -notlike '169.254.*.*' }
         return $addresses
     }
     Catch {
